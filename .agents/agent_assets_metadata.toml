@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "Qv3UhPvj03BWmMbDJPKhg"
+uri = "file://attached_assets/headless-woocommerce-architecture-plan.md"
+type = "text"
+title = "Headless WooCommerce — Technical Architecture Plan"

@@ -1,0 +1,46 @@
+I want you to create a complete technical architecture and implementation plan for building a professional Headless WooCommerce eCommerce store.
+
+Project idea:
+- The frontend will be built with Next.js.
+- The backend will be WordPress + WooCommerce.
+- WooCommerce will be the main source of truth for products, categories, orders, customers, coupons, shipping, taxes, payment gateways, and emails.
+- Later, I want to build a custom WordPress plugin to control the Next.js frontend settings, such as colors, fonts, logo, homepage sections, social links, SEO defaults, and checkout return URLs.
+- The default language of the store must be Arabic with full RTL support.
+- The second language must be English with LTR support.
+- The design should be modern, professional, responsive, fast, and suitable for a premium online store.
+
+Important:
+At this stage, do not write code. I only want a professional technical plan and architecture.
+
+Please include:
+
+1. A clear explanation of the system concept.
+2. The best architecture for connecting Next.js with WooCommerce.
+3. What should be handled by Next.js.
+4. What should remain inside WordPress and WooCommerce.
+5. The role of the custom WordPress plugin.
+6. How to support Arabic RTL as the default language and English LTR as the second language.
+7. How to handle products and categories.
+8. How to handle product variations.
+9. How to handle the cart.
+10. How to handle checkout and payment.
+11. How to create a WooCommerce order from Next.js and redirect the customer to the WooCommerce payment page.
+12. How to handle payment success, failed payment, and order status updates.
+13. How to handle customer accounts, login, registration, and order history.
+14. Required security practices.
+15. Caching and performance strategy.
+16. SEO strategy.
+17. Suggested Next.js folder structure.
+18. Suggested custom WordPress plugin folder structure.
+19. Recommended tech stack.
+20. Development phases step by step.
+21. Expected problems and how to avoid them.
+22. Production deployment recommendations.
+
+Requirements:
+- Do not write code yet.
+- Do not skip important details.
+- Write the plan as if this is a production-ready commercial project.
+- Make the frontend Arabic-first, RTL-first, and English-ready.
+- Focus on clean architecture, security, scalability, performance, and modern UI/UX.
+- Make the plan practical and realistic, not theoretical.
