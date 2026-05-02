@@ -1,0 +1,29 @@
+{
+  "name": "@workspace/next-storefront",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port ${PORT:-3000}",
+    "build": "next build",
+    "start": "next start --port ${PORT:-3000}",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "^15.3.1",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "next-intl": "^3.26.3",
+    "clsx": "catalog:",
+    "tailwind-merge": "catalog:",
+    "lucide-react": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "typescript": "~5.9.2",
+    "tailwindcss": "^3.4.17",
+    "postcss": "^8.4.38",
+    "autoprefixer": "^10.4.19"
+  }
+}

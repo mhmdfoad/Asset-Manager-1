@@ -1,0 +1,98 @@
+Based on the approved architecture plan, start with Phase 1 only: the initial Next.js foundation setup.
+
+Do not build the full store yet.
+Do not implement WooCommerce API integration yet.
+Do not implement cart, checkout, payment, authentication, or product fetching yet.
+
+Create a clean production-ready Next.js foundation with:
+
+Tech stack:
+- Next.js App Router
+- TypeScript
+- Tailwind CSS
+- next-intl for internationalization
+- Arabic as the default language
+- Full RTL support for Arabic
+- English as the second language with LTR support
+- Clean folder structure
+- Reusable layout components
+- Basic global styles
+- Environment variables structure
+- Placeholder pages only
+- استخدام خط ibm plex sans arabic
+Routing requirements:
+- Arabic should be the default language.
+- The root path `/` should show the Arabic homepage.
+- English should be available under `/en`.
+- Use middleware to handle locale routing properly.
+- The HTML element must correctly set `lang` and `dir` based on the current locale.
+
+Required placeholder pages:
+Arabic default:
+- /
+- /shop
+- /product/demo-product
+- /category/demo-category
+- /cart
+- /checkout
+- /account
+- /wishlist
+- /search
+- /about
+- /contact
+- /privacy-policy
+- /terms
+
+English:
+- /en
+- /en/shop
+- /en/product/demo-product
+- /en/category/demo-category
+- /en/cart
+- /en/checkout
+- /en/account
+- /en/wishlist
+- /en/search
+- /en/about
+- /en/contact
+- /en/privacy-policy
+- /en/terms
+
+Folder structure should include:
+- app
+- components
+- components/layout
+- components/ui
+- lib
+- hooks
+- store
+- types
+- messages
+- styles
+
+Create these basic layout components:
+- Header
+- Footer
+- MobileMenu placeholder
+- LanguageSwitcher
+- ThemeProvider placeholder if needed
+
+Create translation files:
+- messages/ar.json
+- messages/en.json
+
+Create a modern Arabic-first layout:
+- Clean header
+- Navigation links
+- Responsive container
+- Modern typography
+- RTL-friendly spacing
+- Tailwind CSS logical or direction-aware classes where needed
+
+Important requirements:
+- Do not add unnecessary complexity.
+- Do not connect to WooCommerce yet.
+- Do not add fake business logic.
+- Use placeholder content only.
+- Make the code clean, scalable, and ready for the next phase.
+- Explain the generated folder structure after implementation.
