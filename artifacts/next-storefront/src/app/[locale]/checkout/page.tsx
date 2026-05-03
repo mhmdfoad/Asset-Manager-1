@@ -40,7 +40,6 @@ async function getCheckoutPrefill(): Promise<CheckoutPrefillData | null> {
     const user = await getCurrentUser();
     if (!user) return null;
 
-    // Fetch addresses and profile in parallel — both are optional
     const [addresses, profile] = await Promise.all([
       wpAuthGet<WpAddresses>('/addresses'),
       wpAuthGet<WpProfile>('/profile'),
@@ -48,7 +47,6 @@ async function getCheckoutPrefill(): Promise<CheckoutPrefillData | null> {
 
     const s = (val: string | undefined | null) => (val ?? '').trim();
 
-    // Prefer saved billing address meta; fall back to user object
     const billing = {
       first_name: s(addresses?.billing_first_name) || s(user.first_name),
       last_name: s(addresses?.billing_last_name) || s(user.last_name),
@@ -73,12 +71,10 @@ async function getCheckoutPrefill(): Promise<CheckoutPrefillData | null> {
       postcode: s(addresses?.shipping_postcode) || billing.postcode,
     };
 
-    // Only return prefill if at least name is available (avoids empty banner for new users)
     if (!billing.first_name && !billing.last_name && !billing.email) return null;
 
     return { billing, shipping };
   } catch {
-    // Never block checkout on auth errors
     return null;
   }
 }
@@ -92,12 +88,10 @@ export default async function CheckoutPage({
   setRequestLocale(locale);
   const isAr = locale === 'ar';
 
-  // Fetch prefill data server-side — token stays in HTTP-only cookie, never sent to client
   const prefillData = await getCheckoutPrefill();
 
   return (
     <div>
-      {/* Breadcrumb */}
       <div className="border-b border-neutral-200 bg-white">
         <div className="container py-4">
           <nav
@@ -119,21 +113,17 @@ export default async function CheckoutPage({
         </div>
       </div>
 
-      {/* Page header */}
       <div className="border-b border-neutral-100 bg-white">
         <div className="container py-6">
           <h1 className="text-2xl font-bold text-primary-800 lg:text-3xl">
             {isAr ? 'إتمام الشراء' : 'Checkout'}
           </h1>
           <p className="mt-1 text-sm text-neutral-500">
-            {isAr
-              ? 'أكمل بياناتك لتأكيد طلبك'
-              : 'Complete your details to confirm your order'}
+            {isAr ? 'أكمل بياناتك لتأكيد طلبك' : 'Complete your details to confirm your order'}
           </p>
         </div>
       </div>
 
-      {/* Form */}
       <div className="container py-10">
         <CheckoutForm locale={locale} prefillData={prefillData} />
       </div>

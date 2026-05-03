@@ -25,9 +25,6 @@ import CouponInput from './CouponInput';
 import ShippingMethodSelector from './ShippingMethodSelector';
 import { cn } from '@/lib/utils';
 
-/* ------------------------------------------------------------------ */
-/* Prefill data type (server → client prop, JSON-serialisable)         */
-/* ------------------------------------------------------------------ */
 export interface CheckoutPrefillData {
   billing: {
     first_name: string;
@@ -53,9 +50,6 @@ export interface CheckoutPrefillData {
   };
 }
 
-/* ------------------------------------------------------------------ */
-/* Section wrapper                                                      */
-/* ------------------------------------------------------------------ */
 function Section({
   title,
   icon: Icon,
@@ -78,20 +72,14 @@ function Section({
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* CheckoutForm                                                         */
-/* ------------------------------------------------------------------ */
 interface CheckoutFormProps {
   locale: string;
-  /** Prefilled from saved account data (server-side, HTTP-only cookie). Null for guests. */
   prefillData?: CheckoutPrefillData | null;
 }
 
 export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps) {
   const isAr = locale === 'ar';
   const router = useRouter();
-
-  // ── Hydration guard ──────────────────────────────────────────────
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
@@ -169,11 +157,9 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
   const shippingCountry = watch('shipping.country');
   const shippingState = watch('shipping.state');
 
-  // Country/state used for shipping method lookup
   const effectiveCountry = sameAsBilling ? billingCountry : (shippingCountry || billingCountry);
   const effectiveState = sameAsBilling ? billingState : (shippingState || billingState);
 
-  // Human-readable labels for each billing field (Arabic / English)
   const fieldLabels = useMemo(
     () =>
       isAr
@@ -200,16 +186,12 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
 
   const onValidationError = useCallback(
     (fieldErrors: FieldErrors<CheckoutFormData>) => {
-      const billingErrors = fieldErrors.billing as
-        | Record<string, { message?: string }>
-        | undefined;
+      const billingErrors = fieldErrors.billing as Record<string, { message?: string }> | undefined;
       const failing = Object.keys(billingErrors ?? {})
         .filter((k) => billingErrors?.[k]?.message)
         .map((k) => fieldLabels[k as keyof typeof fieldLabels] ?? k);
 
-      const shippingErrors = fieldErrors.shipping as
-        | Record<string, { message?: string }>
-        | undefined;
+      const shippingErrors = fieldErrors.shipping as Record<string, { message?: string }> | undefined;
       const failingShipping = Object.keys(shippingErrors ?? {})
         .filter((k) => shippingErrors?.[k]?.message)
         .map((k) => fieldLabels[k as keyof typeof fieldLabels] ?? k);
@@ -243,9 +225,7 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
     try {
       const cartItems = items.map((item) => ({
         product_id: item.product_id,
-        ...(item.variation_id && item.variation_id > 0
-          ? { variation_id: item.variation_id }
-          : {}),
+        ...(item.variation_id && item.variation_id > 0 ? { variation_id: item.variation_id } : {}),
         quantity: item.quantity,
       }));
 
@@ -263,12 +243,8 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
           }
         : data.shipping;
 
-      // Use applied coupon code from store (validated server-side),
-      // which is also reflected in the form's couponCode field.
       const couponCode = appliedCoupon?.code || data.couponCode?.trim() || undefined;
 
-      // Server Action — runs server-side. Shipping cost is re-resolved
-      // server-side from shippingMethodId; client cost is never trusted.
       const result = await createOrderAction({
         cartItems,
         billing: data.billing,
@@ -276,7 +252,6 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
         couponCode,
         customerNote: data.customerNote?.trim() || undefined,
         paymentMethod: data.paymentMethod,
-        // Shipping method selection — server will re-fetch cost from WooCommerce
         shippingMethodId: selectedShippingMethod?.id,
         shippingCountry: effectiveCountry || undefined,
         shippingState: effectiveState || undefined,
@@ -287,7 +262,6 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
         return;
       }
 
-      // Clear cart + checkout state before navigating
       clearCart();
       clearCheckout();
 
@@ -307,9 +281,6 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
     }
   };
 
-  /* ---------------------------------------------------------------- */
-  /* Labels                                                            */
-  /* ---------------------------------------------------------------- */
   const l = isAr
     ? {
         billing: 'عنوان الفاتورة',
@@ -347,17 +318,10 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
         validationError: 'Please fix the fields highlighted in red before continuing.',
       };
 
-  /* ---------------------------------------------------------------- */
-  /* Render                                                            */
-  /* ---------------------------------------------------------------- */
   return (
     <form ref={formRef} onSubmit={handleSubmit(onSubmit, onValidationError)} noValidate>
       <div className="grid gap-8 lg:grid-cols-3">
-
-        {/* ── Left column: form ─────────────────────────────────── */}
         <div className="flex flex-col gap-5 lg:col-span-2">
-
-          {/* Validation error summary */}
           {validationError && (
             <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
               <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0" />
@@ -374,7 +338,6 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
             </div>
           )}
 
-          {/* Prefill notice */}
           {hasPrefill && !prefillNoticeDismissed && (
             <div className="flex items-start justify-between gap-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3.5 text-sm text-blue-700">
               <div className="flex items-start gap-2.5">
@@ -392,7 +355,6 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
             </div>
           )}
 
-          {/* Billing */}
           <Section title={l.billing} icon={CreditCard}>
             <AddressFields
               prefix="billing"
@@ -403,7 +365,6 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
             />
           </Section>
 
-          {/* Same-as-billing toggle */}
           <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-neutral-200 bg-white px-4 py-3.5 transition-colors hover:bg-neutral-50">
             <input
               type="checkbox"
@@ -413,24 +374,17 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
             <span className="text-sm font-medium text-primary-800">{l.sameAsBilling}</span>
           </label>
 
-          {/* Separate shipping address */}
           {!sameAsBilling && (
             <Section title={l.shipping} icon={CreditCard}>
-              <AddressFields
-                prefix="shipping"
-                register={register}
-                errors={errors}
-                isAr={isAr}
-              />
+              <AddressFields prefix="shipping" register={register} errors={errors} isAr={isAr} />
             </Section>
           )}
 
-          {/* Shipping method — shown when country is entered */}
           {mounted && (
             <Section title={l.shippingMethod} icon={Truck}>
               <ShippingMethodSelector
-                country={effectiveCountry ?? ''}
-                state={effectiveState ?? ''}
+                country={billingCountry || ''}
+                state={billingState || ''}
                 subtotal={subtotal}
                 hasCoupon={!!appliedCoupon}
                 locale={locale}
@@ -438,7 +392,6 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
             </Section>
           )}
 
-          {/* Payment method */}
           <Section title={l.paymentMethod} icon={CreditCard}>
             <label className="flex cursor-pointer items-center gap-3 rounded-xl border-2 border-accent-400 bg-accent-50 p-4">
               <input
@@ -460,9 +413,7 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
             </p>
           </Section>
 
-          {/* Additional info: order notes + coupon */}
           <Section title={l.additionalInfo} icon={FileText}>
-            {/* Order notes */}
             <div className="flex flex-col gap-1">
               <label className="text-sm font-medium text-primary-800">{l.orderNotes}</label>
               <textarea
@@ -473,7 +424,6 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
               />
             </div>
 
-            {/* Coupon — replaced by CouponInput component */}
             <div className="mt-4">
               <CouponInput
                 subtotal={subtotal}
@@ -484,7 +434,6 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
             </div>
           </Section>
 
-          {/* Server error */}
           {serverError && (
             <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
               <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0" />
@@ -492,7 +441,6 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
             </div>
           )}
 
-          {/* Empty cart warning */}
           {mounted && cartEmpty && (
             <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-700">
               <ShoppingCart className="mt-0.5 h-5 w-5 flex-shrink-0" />
@@ -500,7 +448,6 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
             </div>
           )}
 
-          {/* Submit */}
           <button
             type="submit"
             disabled={cartEmpty || isSubmitting}
@@ -525,11 +472,9 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
           </button>
         </div>
 
-        {/* ── Right column: order summary ──────────────────────── */}
         <div className="lg:col-span-1">
           <OrderSummary locale={locale} />
         </div>
-
       </div>
     </form>
   );

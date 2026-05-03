@@ -58,7 +58,6 @@ export default function ShippingMethodSelector({
         enterCountry: 'Enter a country to see available shipping methods.',
       };
 
-  // Fetch methods whenever country/state/subtotal/hasCoupon changes
   useEffect(() => {
     if (!country || country.length < 2) {
       setMethodsState({ status: 'idle', methods: [], error: null });
@@ -92,8 +91,6 @@ export default function ShippingMethodSelector({
 
       setMethodsState({ status: 'loaded', methods, error: null });
 
-      // Auto-select first method if nothing is selected yet,
-      // or re-validate current selection (method may no longer exist for this country)
       if (methods.length > 0) {
         const stillValid = selectedShippingMethod
           ? methods.some((m) => m.id === selectedShippingMethod.id)
@@ -105,13 +102,10 @@ export default function ShippingMethodSelector({
         clearShippingMethod();
       }
     });
-  }, [country, state, subtotal, hasCoupon]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [country, state, subtotal, hasCoupon]);
 
-  // Don't render at all if country not entered yet
   if (!country || country.length < 2) {
-    return (
-      <p className="text-xs text-neutral-400">{l.enterCountry}</p>
-    );
+    return <p className="text-xs text-neutral-400">{l.enterCountry}</p>;
   }
 
   if (methodsState.status === 'loading' || isPending) {
@@ -133,9 +127,7 @@ export default function ShippingMethodSelector({
   }
 
   if (methodsState.status === 'loaded' && methodsState.methods.length === 0) {
-    return (
-      <p className="text-sm text-neutral-400">{l.noMethods}</p>
-    );
+    return <p className="text-sm text-neutral-400">{l.noMethods}</p>;
   }
 
   if (methodsState.methods.length === 0) return null;
@@ -166,11 +158,7 @@ export default function ShippingMethodSelector({
                 <span className="text-sm font-medium text-primary-800">{method.title}</span>
               </div>
             </div>
-            <span
-              className={`text-sm font-semibold ${
-                method.free ? 'text-green-600' : 'text-primary-800'
-              }`}
-            >
+            <span className={`text-sm font-semibold ${method.free ? 'text-green-600' : 'text-primary-800'}`}>
               {method.free ? l.free : formatPrice(method.cost.toFixed(2))}
             </span>
           </label>
