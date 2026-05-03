@@ -21,11 +21,25 @@ export interface OrderLineItem {
   quantity: number;
 }
 
+export interface ShippingLine {
+  /** WooCommerce shipping method ID, e.g. "flat_rate", "free_shipping", "local_pickup" */
+  method_id: string;
+  /** Human-readable method title shown in WooCommerce admin */
+  method_title: string;
+  /** Cost as a decimal string, e.g. "15.00" */
+  total: string;
+}
+
 export interface CreateOrderInput {
   billing: OrderAddress;
   shipping: OrderAddress;
   line_items: OrderLineItem[];
   coupon_lines?: { code: string }[];
+  /**
+   * Selected shipping method(s). When provided, WooCommerce will use
+   * the supplied shipping line instead of its default calculation.
+   */
+  shipping_lines?: ShippingLine[];
   customer_note?: string;
   payment_method?: string;
   payment_method_title?: string;
@@ -159,6 +173,9 @@ export async function createWooCommerceOrder(
     })),
     ...(input.coupon_lines && input.coupon_lines.length > 0
       ? { coupon_lines: input.coupon_lines }
+      : {}),
+    ...(input.shipping_lines && input.shipping_lines.length > 0
+      ? { shipping_lines: input.shipping_lines }
       : {}),
     ...(input.customer_note ? { customer_note: input.customer_note } : {}),
   };

@@ -8,18 +8,21 @@ import {
   AlertCircle,
   Loader2,
   ShoppingCart,
-  Tag,
   FileText,
   CreditCard,
   CheckCircle,
   Info,
   X,
+  Truck,
 } from 'lucide-react';
 import { useCartStore } from '@/store/cart-store';
+import { useCheckoutStore } from '@/store/checkout-store';
 import { createCheckoutSchema, type CheckoutFormData } from '@/lib/validations/checkout';
 import { createOrderAction } from '@/app/actions/checkout';
 import AddressFields from './AddressFields';
 import OrderSummary from './OrderSummary';
+import CouponInput from './CouponInput';
+import ShippingMethodSelector from './ShippingMethodSelector';
 import { cn } from '@/lib/utils';
 
 /* ------------------------------------------------------------------ */
@@ -89,22 +92,21 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
   const router = useRouter();
 
   // ── Hydration guard ──────────────────────────────────────────────
-  // Zustand persisted store reads from localStorage, which doesn't
-  // exist on the server. We must wait until after mount before
-  // accessing cart state to avoid React hydration mismatch (#418).
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  const { items, getTotalCount } = useCartStore();
+  const { items, getTotalCount, getSubtotal, clearCart } = useCartStore();
+  const { appliedCoupon, selectedShippingMethod, clearCheckout } = useCheckoutStore();
+
   const cartCount = mounted ? getTotalCount() : 0;
   const cartEmpty = cartCount === 0;
+  const subtotal = mounted ? getSubtotal() : 0;
 
   const formRef = useRef<HTMLFormElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [validationError, setValidationError] = useState(false);
   const [failedFieldLabels, setFailedFieldLabels] = useState<string[]>([]);
-  const [couponOpen, setCouponOpen] = useState(false);
   const [prefillNoticeDismissed, setPrefillNoticeDismissed] = useState(false);
 
   const hasPrefill = Boolean(prefillData && (prefillData.billing.first_name || prefillData.billing.email));
@@ -115,6 +117,7 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<CheckoutFormData>({
     resolver: zodResolver(schema),
@@ -123,10 +126,6 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
       paymentMethod: 'cod',
       couponCode: '',
       customerNote: '',
-      // Spread prefill data if available — guest checkout keeps empty defaults.
-      // Shipping is only preset when the user has a complete saved shipping address
-      // (country + city + address_1 all non-empty). Otherwise it's left as undefined
-      // so the hidden shipping fields never trigger validation errors.
       ...(prefillData
         ? {
             billing: {
@@ -165,6 +164,14 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
   });
 
   const sameAsBilling = watch('sameAsBilling');
+  const billingCountry = watch('billing.country');
+  const billingState = watch('billing.state');
+  const shippingCountry = watch('shipping.country');
+  const shippingState = watch('shipping.state');
+
+  // Country/state used for shipping method lookup
+  const effectiveCountry = sameAsBilling ? billingCountry : (shippingCountry || billingCountry);
+  const effectiveState = sameAsBilling ? billingState : (shippingState || billingState);
 
   // Human-readable labels for each billing field (Arabic / English)
   const fieldLabels = useMemo(
@@ -191,11 +198,8 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
     [isAr]
   );
 
-  // Scroll to first invalid field when react-hook-form blocks submission.
-  // Without this, the user is scrolled to the button and sees nothing happen.
   const onValidationError = useCallback(
     (fieldErrors: FieldErrors<CheckoutFormData>) => {
-      // Extract human-readable names of failing billing fields
       const billingErrors = fieldErrors.billing as
         | Record<string, { message?: string }>
         | undefined;
@@ -237,7 +241,6 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
     setServerError(null);
 
     try {
-      // Only send product_id, variation_id, quantity — never prices
       const cartItems = items.map((item) => ({
         product_id: item.product_id,
         ...(item.variation_id && item.variation_id > 0
@@ -260,21 +263,33 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
           }
         : data.shipping;
 
-      // Server Action — runs server-side, no fetch/API route needed.
-      // customer_id is read server-side from the HTTP-only cookie — not sent by client.
+      // Use applied coupon code from store (validated server-side),
+      // which is also reflected in the form's couponCode field.
+      const couponCode = appliedCoupon?.code || data.couponCode?.trim() || undefined;
+
+      // Server Action — runs server-side. Shipping cost is re-resolved
+      // server-side from shippingMethodId; client cost is never trusted.
       const result = await createOrderAction({
         cartItems,
         billing: data.billing,
         shipping: shippingAddress,
-        couponCode: data.couponCode?.trim() || undefined,
+        couponCode,
         customerNote: data.customerNote?.trim() || undefined,
         paymentMethod: data.paymentMethod,
+        // Shipping method selection — server will re-fetch cost from WooCommerce
+        shippingMethodId: selectedShippingMethod?.id,
+        shippingCountry: effectiveCountry || undefined,
+        shippingState: effectiveState || undefined,
       });
 
       if (!result.success) {
         setServerError(result.error);
         return;
       }
+
+      // Clear cart + checkout state before navigating
+      clearCart();
+      clearCheckout();
 
       if (result.payment_url) {
         window.location.href = result.payment_url;
@@ -300,19 +315,16 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
         billing: 'عنوان الفاتورة',
         shipping: 'عنوان الشحن',
         sameAsBilling: 'عنوان الشحن مطابق لعنوان الفاتورة',
+        shippingMethod: 'طريقة الشحن',
         additionalInfo: 'معلومات إضافية',
         orderNotes: 'ملاحظات الطلب (اختياري)',
         orderNotesPlaceholder: 'ملاحظات خاصة لطلبك، مثل: ملاحظات التسليم...',
-        haveCoupon: 'لديك كود خصم؟',
-        couponCode: 'كود الخصم',
-        couponPlaceholder: 'أدخل الكود هنا...',
         paymentMethod: 'طريقة الدفع',
         cod: 'الدفع عند الاستلام',
         codDesc: 'ادفع نقداً عند استلام طلبك',
         placeOrder: 'تأكيد الطلب',
         placingOrder: 'جاري إنشاء الطلب...',
         emptyCart: 'سلتك فارغة — أضف منتجات للمتابعة',
-        shippingNote: 'الشحن يُحسب من قِبَل المتجر بناءً على عنوانك.',
         prefillNotice: 'تم تعبئة بياناتك المحفوظة تلقائياً، ويمكنك تعديلها قبل إتمام الطلب.',
         validationError: 'يرجى تصحيح الحقول المشار إليها بالأحمر قبل المتابعة.',
       }
@@ -320,19 +332,16 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
         billing: 'Billing Address',
         shipping: 'Shipping Address',
         sameAsBilling: 'Shipping address same as billing',
+        shippingMethod: 'Shipping Method',
         additionalInfo: 'Additional Information',
         orderNotes: 'Order Notes (Optional)',
         orderNotesPlaceholder: 'Special notes for your order, e.g. delivery instructions...',
-        haveCoupon: 'Have a coupon?',
-        couponCode: 'Coupon Code',
-        couponPlaceholder: 'Enter coupon code...',
         paymentMethod: 'Payment Method',
         cod: 'Cash on Delivery',
         codDesc: 'Pay with cash upon delivery',
         placeOrder: 'Place Order',
         placingOrder: 'Creating Order...',
         emptyCart: 'Your cart is empty — add items to continue',
-        shippingNote: 'Shipping is calculated by the store based on your address.',
         prefillNotice:
           'Your saved details were filled automatically. You can edit them before placing the order.',
         validationError: 'Please fix the fields highlighted in red before continuing.',
@@ -348,7 +357,7 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
         {/* ── Left column: form ─────────────────────────────────── */}
         <div className="flex flex-col gap-5 lg:col-span-2">
 
-          {/* Validation error summary — shown when user clicks submit with invalid fields */}
+          {/* Validation error summary */}
           {validationError && (
             <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
               <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0" />
@@ -365,7 +374,7 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
             </div>
           )}
 
-          {/* Prefill notice — only shown for logged-in customers with saved data */}
+          {/* Prefill notice */}
           {hasPrefill && !prefillNoticeDismissed && (
             <div className="flex items-start justify-between gap-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3.5 text-sm text-blue-700">
               <div className="flex items-start gap-2.5">
@@ -404,7 +413,7 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
             <span className="text-sm font-medium text-primary-800">{l.sameAsBilling}</span>
           </label>
 
-          {/* Shipping — only when not same as billing */}
+          {/* Separate shipping address */}
           {!sameAsBilling && (
             <Section title={l.shipping} icon={CreditCard}>
               <AddressFields
@@ -412,6 +421,19 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
                 register={register}
                 errors={errors}
                 isAr={isAr}
+              />
+            </Section>
+          )}
+
+          {/* Shipping method — shown when country is entered */}
+          {mounted && (
+            <Section title={l.shippingMethod} icon={Truck}>
+              <ShippingMethodSelector
+                country={effectiveCountry ?? ''}
+                state={effectiveState ?? ''}
+                subtotal={subtotal}
+                hasCoupon={!!appliedCoupon}
+                locale={locale}
               />
             </Section>
           )}
@@ -438,7 +460,7 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
             </p>
           </Section>
 
-          {/* Additional info: notes + coupon */}
+          {/* Additional info: order notes + coupon */}
           <Section title={l.additionalInfo} icon={FileText}>
             {/* Order notes */}
             <div className="flex flex-col gap-1">
@@ -451,33 +473,16 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
               />
             </div>
 
-            {/* Coupon */}
+            {/* Coupon — replaced by CouponInput component */}
             <div className="mt-4">
-              <button
-                type="button"
-                onClick={() => setCouponOpen((v) => !v)}
-                className="flex items-center gap-1.5 text-sm font-medium text-accent-600 hover:text-accent-500"
-              >
-                <Tag className="h-3.5 w-3.5" />
-                {l.haveCoupon}
-              </button>
-
-              {couponOpen && (
-                <div className="mt-3">
-                  <input
-                    type="text"
-                    placeholder={l.couponPlaceholder}
-                    dir="ltr"
-                    {...register('couponCode')}
-                    className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-accent-400 focus:ring-1 focus:ring-accent-400 placeholder:text-neutral-400"
-                  />
-                </div>
-              )}
+              <CouponInput
+                subtotal={subtotal}
+                locale={locale}
+                onApplied={(code) => setValue('couponCode', code)}
+                onCleared={() => setValue('couponCode', '')}
+              />
             </div>
           </Section>
-
-          {/* Shipping note */}
-          <p className="text-center text-xs text-neutral-400">{l.shippingNote}</p>
 
           {/* Server error */}
           {serverError && (
@@ -487,7 +492,7 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
             </div>
           )}
 
-          {/* Empty cart warning — only shown after mount to avoid hydration mismatch */}
+          {/* Empty cart warning */}
           {mounted && cartEmpty && (
             <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-700">
               <ShoppingCart className="mt-0.5 h-5 w-5 flex-shrink-0" />

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
-import { Trash2, ShoppingCart, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Trash2, ShoppingCart, ArrowLeft, ArrowRight, Tag } from 'lucide-react';
 import { useCartStore } from '@/store/cart-store';
 import { toast } from '@/store/toast-store';
 import { formatPrice, decodeSlug } from '@/lib/format';
@@ -264,11 +264,15 @@ export default function CartPageClient({ locale }: CartPageClientProps) {
             </span>
           </div>
 
-          <p className="mt-2 text-xs text-neutral-400">
-            {isAr
-              ? '* الأسعار للعرض فقط. السعر النهائي يُحسب عند إتمام الطلب.'
-              : '* Prices shown for display only. Final price calculated at checkout.'}
-          </p>
+          {/* Coupon note */}
+          <div className="mt-3 flex items-center gap-1.5 text-xs text-neutral-400">
+            <Tag className="h-3.5 w-3.5 flex-shrink-0" />
+            <span>
+              {isAr
+                ? 'يمكنك تطبيق كود الخصم في صفحة إتمام الشراء.'
+                : 'Coupon codes can be applied at checkout.'}
+            </span>
+          </div>
 
           <Link
             href="/checkout"

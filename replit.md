@@ -44,12 +44,27 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 - **Cookie**: HTTP-only `hwauth` cookie, 7-day expiry, never exposed to browser/localStorage
 - **Account guard**: `src/app/[locale]/account/layout.tsx` — redirects to `/login` if not authenticated
 
+### Coupons + Shipping + Server-side Totals (Phase 8)
+- **Coupon validation**: `src/lib/coupons.ts` — server-side WC REST API validation (expiry, usage limit, min/max amount, discount calc)
+- **Shipping methods**: `src/lib/shipping.ts` — fetches WC shipping zones/locations, matches country+state to best zone, evaluates free_shipping conditions
+- **Cart totals**: `src/lib/cart-totals.ts` — preview totals (subtotal, discount, shipping, est. total) using server-side WC product prices
+- **Checkout store**: `src/store/checkout-store.ts` — Zustand store for `appliedCoupon` + `selectedShippingMethod` (not persisted; cleared after order)
+- **Server Actions**: `src/app/actions/cart.ts` — `validateCouponAction`, `getShippingMethodsAction`
+- **CouponInput**: `src/components/checkout/CouponInput.tsx` — apply/remove UI, calls `validateCouponAction`
+- **ShippingMethodSelector**: `src/components/checkout/ShippingMethodSelector.tsx` — radio group, auto-fetches on billing country change, auto-selects first method
+- **Order creation**: shipping method is re-resolved server-side in `createOrderAction` (client cost never trusted); `shipping_lines` + `coupon_lines` sent to WooCommerce
+- **OrderSummary**: shows subtotal, coupon discount (green), shipping method + cost, estimated total
+
 ### Key source files
 - `src/lib/woocommerce.ts` — WooCommerce API client (server-only)
 - `src/lib/auth.ts` — Headless auth helpers (server-only, reads hwauth cookie)
 - `src/lib/products.ts` — data fetching functions (getProducts, getFeaturedProducts, etc.)
+- `src/lib/coupons.ts` — coupon validation against WooCommerce REST API (server-only)
+- `src/lib/shipping.ts` — shipping zones + methods from WooCommerce (server-only)
+- `src/lib/orders.ts` — order creation with shipping_lines + coupon_lines support
 - `src/types/woocommerce.ts` — TypeScript types for products/categories
 - `src/app/actions/auth.ts` — Server Actions for login/register/logout/profile/address
+- `src/app/actions/cart.ts` — Server Actions for coupon validation + shipping methods
 - `src/components/auth/` — LoginForm, RegisterForm, LogoutButton, AccountNav, ProfileForm, AddressForm
 - `src/components/product/ProductCard.tsx` — reusable product card
 - `src/components/product/ProductGrid.tsx` — product grid with empty state

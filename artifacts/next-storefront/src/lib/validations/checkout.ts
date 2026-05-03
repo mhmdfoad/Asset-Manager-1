@@ -161,6 +161,18 @@ export const ServerCheckoutSchema = z.object({
   couponCode: z.string().max(100).optional(),
   customerNote: z.string().max(1000).optional(),
   paymentMethod: z.string().max(50).default('cod'),
+  /**
+   * Selected shipping method ID: "{zoneId}_{instanceId}", e.g. "1_3".
+   * When provided, the server action fetches methods from WooCommerce and
+   * resolves the server-side cost — client-supplied costs are never trusted.
+   */
+  shippingMethodId: z.string().max(50).optional(),
+  /**
+   * Billing/shipping country for server-side shipping zone lookup.
+   * Required when shippingMethodId is set.
+   */
+  shippingCountry: z.string().max(10).optional(),
+  shippingState: z.string().max(100).optional(),
 });
 
 export type ServerCheckoutInput = z.infer<typeof ServerCheckoutSchema>;
