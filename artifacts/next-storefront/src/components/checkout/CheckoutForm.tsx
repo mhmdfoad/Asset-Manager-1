@@ -1,12 +1,21 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
-import { AlertCircle, Loader2, ShoppingCart, Tag, FileText, CreditCard, CheckCircle } from 'lucide-react';
+import {
+  AlertCircle,
+  Loader2,
+  ShoppingCart,
+  Tag,
+  FileText,
+  CreditCard,
+  CheckCircle,
+} from 'lucide-react';
 import { useCartStore } from '@/store/cart-store';
 import { createCheckoutSchema, type CheckoutFormData } from '@/lib/validations/checkout';
+import { createOrderAction } from '@/app/actions/checkout';
 import AddressFields from './AddressFields';
 import OrderSummary from './OrderSummary';
 import { cn } from '@/lib/utils';
@@ -47,8 +56,15 @@ export default function CheckoutForm({ locale }: CheckoutFormProps) {
   const isAr = locale === 'ar';
   const router = useRouter();
 
+  // ── Hydration guard ──────────────────────────────────────────────
+  // Zustand persisted store reads from localStorage, which doesn't
+  // exist on the server. We must wait until after mount before
+  // accessing cart state to avoid React hydration mismatch (#418).
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   const { items, getTotalCount } = useCartStore();
-  const cartCount = getTotalCount();
+  const cartCount = mounted ? getTotalCount() : 0;
   const cartEmpty = cartCount === 0;
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -104,45 +120,31 @@ export default function CheckoutForm({ locale }: CheckoutFormProps) {
           }
         : data.shipping;
 
-      const response = await fetch('/api/checkout/create-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          cartItems,
-          billing: data.billing,
-          shipping: shippingAddress,
-          couponCode: data.couponCode?.trim() || undefined,
-          customerNote: data.customerNote?.trim() || undefined,
-          paymentMethod: data.paymentMethod,
-        }),
+      // Server Action — runs server-side, no fetch/API route needed
+      const result = await createOrderAction({
+        cartItems,
+        billing: data.billing,
+        shipping: shippingAddress,
+        couponCode: data.couponCode?.trim() || undefined,
+        customerNote: data.customerNote?.trim() || undefined,
+        paymentMethod: data.paymentMethod,
       });
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        setServerError(
-          result.error ??
-            (isAr
-              ? 'حدث خطأ أثناء إنشاء الطلب. يرجى المحاولة مرة أخرى.'
-              : 'An error occurred while creating your order. Please try again.')
-        );
+      if (!result.success) {
+        setServerError(result.error);
         return;
       }
 
-      const { payment_url, order_id } = result;
-
-      if (payment_url) {
-        // Gateway payment — redirect to WooCommerce payment page
-        window.location.href = payment_url;
+      if (result.payment_url) {
+        window.location.href = result.payment_url;
       } else {
-        // COD or no payment URL — go to pending page
-        router.push(`/${locale}/order/pending?order_id=${order_id}`);
+        router.push(`/${locale}/order/pending?order_id=${result.order_id}`);
       }
     } catch {
       setServerError(
         isAr
-          ? 'تعذّر الاتصال بالخادم. يرجى التحقق من اتصالك والمحاولة مرة أخرى.'
-          : 'Failed to connect to the server. Please check your connection and try again.'
+          ? 'تعذّر إرسال الطلب. يرجى المحاولة مرة أخرى.'
+          : 'Failed to submit the order. Please try again.'
       );
     } finally {
       setIsSubmitting(false);
@@ -177,7 +179,7 @@ export default function CheckoutForm({ locale }: CheckoutFormProps) {
         sameAsBilling: 'Shipping address same as billing',
         additionalInfo: 'Additional Information',
         orderNotes: 'Order Notes (Optional)',
-        orderNotesPlaceholder: 'Any special notes for your order, e.g. delivery instructions...',
+        orderNotesPlaceholder: 'Special notes for your order, e.g. delivery instructions...',
         haveCoupon: 'Have a coupon?',
         couponCode: 'Coupon Code',
         couponPlaceholder: 'Enter coupon code...',
@@ -250,7 +252,7 @@ export default function CheckoutForm({ locale }: CheckoutFormProps) {
             </label>
             <p className="mt-3 text-xs text-neutral-400">
               {isAr
-                ? '* طرق دفع إضافية (بطاقة إئتمان، تحويل بنكي) ستتوفر في مرحلة قادمة.'
+                ? '* طرق دفع إضافية (بطاقة ائتمان، تحويل بنكي) ستتوفر في مرحلة قادمة.'
                 : '* Additional payment methods (credit card, bank transfer) will be available in a future update.'}
             </p>
           </Section>
@@ -280,13 +282,13 @@ export default function CheckoutForm({ locale }: CheckoutFormProps) {
               </button>
 
               {couponOpen && (
-                <div className="mt-3 flex gap-2">
+                <div className="mt-3">
                   <input
                     type="text"
                     placeholder={l.couponPlaceholder}
                     dir="ltr"
                     {...register('couponCode')}
-                    className="flex-1 rounded-xl border border-neutral-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-accent-400 focus:ring-1 focus:ring-accent-400 placeholder:text-neutral-400"
+                    className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-accent-400 focus:ring-1 focus:ring-accent-400 placeholder:text-neutral-400"
                   />
                 </div>
               )}
@@ -294,7 +296,7 @@ export default function CheckoutForm({ locale }: CheckoutFormProps) {
           </Section>
 
           {/* Shipping note */}
-          <p className="text-xs text-neutral-400 text-center">{l.shippingNote}</p>
+          <p className="text-center text-xs text-neutral-400">{l.shippingNote}</p>
 
           {/* Server error */}
           {serverError && (
@@ -304,8 +306,8 @@ export default function CheckoutForm({ locale }: CheckoutFormProps) {
             </div>
           )}
 
-          {/* Empty cart warning */}
-          {cartEmpty && (
+          {/* Empty cart warning — only shown after mount to avoid hydration mismatch */}
+          {mounted && cartEmpty && (
             <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-700">
               <ShoppingCart className="mt-0.5 h-5 w-5 flex-shrink-0" />
               <p className="text-sm">{l.emptyCart}</p>
@@ -320,7 +322,7 @@ export default function CheckoutForm({ locale }: CheckoutFormProps) {
               'flex items-center justify-center gap-3 rounded-full px-8 py-4 text-base font-bold text-white shadow-lg transition-all',
               cartEmpty || isSubmitting
                 ? 'cursor-not-allowed bg-neutral-300 shadow-none'
-                : 'bg-accent-500 hover:bg-accent-400 hover:shadow-accent-500/30 hover:shadow-xl'
+                : 'bg-accent-500 hover:bg-accent-400 hover:shadow-xl hover:shadow-accent-500/30'
             )}
           >
             {isSubmitting ? (

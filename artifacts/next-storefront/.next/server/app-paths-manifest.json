@@ -2,7 +2,5 @@
   "/[locale]/page": "app/[locale]/page.js",
   "/[locale]/shop/page": "app/[locale]/shop/page.js",
   "/[locale]/product/[slug]/page": "app/[locale]/product/[slug]/page.js",
-  "/[locale]/checkout/page": "app/[locale]/checkout/page.js",
-  "/[locale]/order/pending/page": "app/[locale]/order/pending/page.js",
-  "/[locale]/order/success/page": "app/[locale]/order/success/page.js"
+  "/[locale]/checkout/page": "app/[locale]/checkout/page.js"
 }
