@@ -24,7 +24,7 @@ export default function SortSelect({ currentSort, locale }: SortSelectProps) {
 
   const handleChange = useCallback(
     (value: string) => {
-      const params = new URLSearchParams(searchParams.toString());
+      const params = new URLSearchParams(searchParams?.toString() ?? '');
       params.set('sort', value);
       params.delete('page');
       router.push(`${pathname}?${params.toString()}`);

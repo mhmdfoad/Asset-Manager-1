@@ -19,7 +19,7 @@ export default function SearchBar({ defaultValue = '', locale }: SearchBarProps)
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault();
-      const params = new URLSearchParams(searchParams.toString());
+      const params = new URLSearchParams(searchParams?.toString() ?? '');
       if (value.trim()) {
         params.set('q', value.trim());
       } else {
@@ -33,7 +33,7 @@ export default function SearchBar({ defaultValue = '', locale }: SearchBarProps)
 
   const handleClear = useCallback(() => {
     setValue('');
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(searchParams?.toString() ?? '');
     params.delete('q');
     params.delete('page');
     router.push(`${pathname}?${params.toString()}`);
