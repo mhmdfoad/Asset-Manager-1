@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
@@ -99,8 +99,10 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
   const cartCount = mounted ? getTotalCount() : 0;
   const cartEmpty = cartCount === 0;
 
+  const formRef = useRef<HTMLFormElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
+  const [validationError, setValidationError] = useState(false);
   const [couponOpen, setCouponOpen] = useState(false);
   const [prefillNoticeDismissed, setPrefillNoticeDismissed] = useState(false);
 
@@ -154,9 +156,28 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
 
   const sameAsBilling = watch('sameAsBilling');
 
+  // Scroll to first invalid field when react-hook-form blocks submission.
+  // Without this, the user is scrolled to the button and sees nothing happen.
+  const onValidationError = useCallback(() => {
+    setValidationError(true);
+    if (formRef.current) {
+      // Find the first red-bordered input/select inside the form
+      const firstInvalid = formRef.current.querySelector<HTMLElement>(
+        'input.border-red-300, select.border-red-300, textarea.border-red-300'
+      );
+      if (firstInvalid) {
+        firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        firstInvalid.focus({ preventScroll: true });
+      } else {
+        formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  }, []);
+
   const onSubmit = async (data: CheckoutFormData) => {
     if (cartEmpty) return;
 
+    setValidationError(false);
     setIsSubmitting(true);
     setServerError(null);
 
@@ -238,6 +259,7 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
         emptyCart: 'سلتك فارغة — أضف منتجات للمتابعة',
         shippingNote: 'الشحن يُحسب من قِبَل المتجر بناءً على عنوانك.',
         prefillNotice: 'تم تعبئة بياناتك المحفوظة تلقائياً، ويمكنك تعديلها قبل إتمام الطلب.',
+        validationError: 'يرجى تصحيح الحقول المشار إليها بالأحمر قبل المتابعة.',
       }
     : {
         billing: 'Billing Address',
@@ -258,17 +280,26 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
         shippingNote: 'Shipping is calculated by the store based on your address.',
         prefillNotice:
           'Your saved details were filled automatically. You can edit them before placing the order.',
+        validationError: 'Please fix the fields highlighted in red before continuing.',
       };
 
   /* ---------------------------------------------------------------- */
   /* Render                                                            */
   /* ---------------------------------------------------------------- */
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate>
+    <form ref={formRef} onSubmit={handleSubmit(onSubmit, onValidationError)} noValidate>
       <div className="grid gap-8 lg:grid-cols-3">
 
         {/* ── Left column: form ─────────────────────────────────── */}
         <div className="flex flex-col gap-5 lg:col-span-2">
+
+          {/* Validation error summary — shown when user clicks submit with invalid fields */}
+          {validationError && (
+            <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
+              <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0" />
+              <p className="text-sm leading-relaxed">{l.validationError}</p>
+            </div>
+          )}
 
           {/* Prefill notice — only shown for logged-in customers with saved data */}
           {hasPrefill && !prefillNoticeDismissed && (
