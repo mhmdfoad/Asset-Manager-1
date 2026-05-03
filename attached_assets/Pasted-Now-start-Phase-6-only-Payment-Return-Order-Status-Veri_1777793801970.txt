@@ -1,0 +1,250 @@
+Now start Phase 6 only: Payment Return + Order Status Verification.
+
+Current situation:
+The checkout flow is working correctly:
+- The customer fills the Next.js checkout form.
+- Next.js creates a WooCommerce order.
+- The customer is redirected to the WooCommerce payment URL:
+  /checkout/order-pay/{order_id}/?pay_for_order=true&key={order_key}
+- The customer completes payment successfully.
+- WooCommerce currently redirects the customer to the default WooCommerce Thank You page.
+
+Problem:
+After payment, I want the customer to return back to the Next.js storefront, not stay on the WooCommerce Thank You page.
+
+Goal:
+After payment success, failed payment, cancelled payment, or pending payment, WooCommerce should redirect the customer back to the correct Next.js page.
+
+Required final flow:
+1. Customer fills checkout in Next.js.
+2. Next.js creates WooCommerce order.
+3. Customer is redirected to WooCommerce order-pay page.
+4. Customer pays using WooCommerce payment gateway.
+5. WooCommerce processes the payment.
+6. WooCommerce redirects customer back to Next.js:
+   - Success:
+     /order/success?order_id={order_id}&key={order_key}
+   - Failed:
+     /order/failed?order_id={order_id}&key={order_key}
+   - Pending:
+     /order/pending?order_id={order_id}&key={order_key}
+7. Next.js verifies the order status server-side by calling WooCommerce API.
+8. Next.js displays the correct result page.
+9. If the order is paid/processing/completed, clear the local cart.
+10. If payment failed or is pending, do not clear the cart too early.
+
+Important:
+Do not trust query parameters alone.
+The Next.js success page must verify the real order status from WooCommerce server-side.
+
+Tasks:
+
+1. Add Next.js order verification API route
+
+Create:
+
+app/api/orders/verify/route.ts
+
+It should:
+- Accept order_id and key.
+- Validate both values.
+- Call WooCommerce REST API server-side:
+  GET /wp-json/wc/v3/orders/{order_id}
+- Compare the provided key with the WooCommerce order key if available.
+- Return safe order data only:
+  - id
+  - status
+  - total
+  - currency
+  - payment_method
+  - payment_method_title
+  - date_created
+  - line_items summary
+- Do not expose private customer data unnecessarily.
+- Do not expose WooCommerce API credentials.
+- Handle invalid order id, invalid key, order not found, and API errors.
+
+2. Improve Next.js order result pages
+
+Update these pages:
+
+/order/success
+/order/failed
+/order/pending
+
+Each page should:
+- Read order_id and key from search params.
+- Call the verification API or verify server-side.
+- Show loading state.
+- Show error state if verification fails.
+- Show order summary if verification succeeds.
+- Display the correct message based on the real WooCommerce order status.
+
+Status handling:
+- processing or completed:
+  Show success message and clear cart.
+- pending:
+  Show pending payment message.
+- failed:
+  Show failed payment message.
+- cancelled:
+  Show cancelled order message.
+- on-hold:
+  Show order received but awaiting confirmation message.
+- any other status:
+  Show generic order status message.
+
+3. Clear cart safely
+
+After verified successful payment:
+- Clear Zustand/localStorage cart only when order status is:
+  - processing
+  - completed
+
+Do not clear cart if:
+- pending
+- failed
+- cancelled
+- verification failed
+
+4. WooCommerce redirect back to Next.js
+
+Add a solution to override WooCommerce return URLs.
+
+Option A:
+Create a small custom WordPress plugin or add code to an existing custom plugin to filter WooCommerce return URLs.
+
+Use WooCommerce hooks to redirect the order received/thank you URL to the Next.js frontend.
+
+Required behavior:
+- When WooCommerce normally redirects to its Thank You page, override it and redirect to:
+  FRONTEND_URL/order/success?order_id={order_id}&key={order_key}
+
+Use a configurable FRONTEND_URL.
+
+Suggested hooks to use:
+- woocommerce_get_return_url
+- woocommerce_order_received_url
+
+Also handle failed/cancelled payment if possible using relevant WooCommerce hooks or gateway return result.
+
+Option B:
+If gateway supports custom return URL settings, configure the gateway return URL to point to Next.js.
+But still add WordPress-side fallback hooks because not all gateways behave the same.
+
+5. WordPress redirect plugin requirements
+
+If creating a small plugin, call it:
+
+Headless Woo Return Redirect
+
+Plugin should:
+- Define frontend URL setting or constant.
+- Override successful order return URL.
+- Build URL:
+  {frontend_url}/order/success?order_id={order_id}&key={order_key}
+- Preserve order id and order key.
+- Sanitize URLs.
+- Not expose sensitive data.
+- Not affect admin order pages.
+- Work only for frontend checkout return.
+- Be compatible with WooCommerce.
+
+Example frontend URL:
+https://your-nextjs-domain.com
+
+6. Failed and pending payment handling
+
+If WooCommerce/gateway marks order failed:
+- Redirect to:
+  {frontend_url}/order/failed?order_id={order_id}&key={order_key}
+
+If order remains pending or on-hold:
+- Redirect to:
+  {frontend_url}/order/pending?order_id={order_id}&key={order_key}
+
+If exact gateway failed redirect is hard to detect:
+- Redirect all returns to:
+  /order/verify?order_id={order_id}&key={order_key}
+Then Next.js checks the real status and internally displays success, failed, or pending.
+
+Recommended simpler approach:
+Use one universal page:
+  /order/verify?order_id={order_id}&key={order_key}
+
+This page verifies status and then shows or redirects to:
+- /order/success
+- /order/failed
+- /order/pending
+
+7. Recommended implementation
+
+Use this robust approach:
+- WooCommerce redirects every completed payment return to:
+  /order/verify?order_id={order_id}&key={order_key}
+- Next.js verifies the actual WooCommerce order status.
+- Next.js decides what to show:
+  - processing/completed = success
+  - failed/cancelled = failed
+  - pending/on-hold = pending
+
+This is better because it does not rely on WooCommerce guessing the final page.
+
+8. i18n
+
+Add Arabic and English translations for:
+- Verifying your order
+- Payment successful
+- Payment failed
+- Payment pending
+- Order cancelled
+- Order received
+- Order number
+- Payment method
+- Total
+- Continue shopping
+- View order
+- We could not verify your order
+- Please contact support
+
+9. UI requirements
+
+Keep the current premium design.
+Create polished order result pages:
+- Success state with icon/card
+- Failed state with clear message
+- Pending state with clear message
+- Order summary card
+- Continue shopping button
+- Contact support link
+- RTL/LTR compatible
+- Mobile friendly
+
+10. Security requirements
+
+- Do not trust order_id and key blindly.
+- Verify order from WooCommerce server-side.
+- Do not expose WooCommerce keys.
+- Do not return full billing/shipping data to the browser unless necessary.
+- Validate query params.
+- Sanitize URLs in WordPress plugin.
+- Prevent open redirect vulnerabilities.
+- Use environment variables for WordPress/WooCommerce credentials.
+- Use HTTPS in production.
+
+Expected output:
+1. Create order verification API route.
+2. Improve order success/failed/pending pages or create universal /order/verify page.
+3. Add safe cart clearing after verified success.
+4. Create WordPress redirect plugin or code snippet to redirect WooCommerce thank you page to Next.js.
+5. Explain where to place the WordPress plugin/snippet.
+6. Explain how the full payment return flow works.
+7. Explain how to test with a real order.
+8. Explain how to handle gateways that behave differently.
+
+Important:
+Do not rebuild checkout.
+Do not change the existing order creation logic unless needed.
+Do not implement customer accounts yet.
+Do not implement the big Storefront Controller plugin yet.
+Focus only on payment return, order verification, and redirecting back to Next.js.

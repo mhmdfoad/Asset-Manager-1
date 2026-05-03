@@ -1,5 +1,5 @@
 import 'server-only';
-import { wcPost, WooCommerceApiError } from './woocommerce';
+import { wcFetch, wcPost, WooCommerceApiError } from './woocommerce';
 
 export interface OrderAddress {
   first_name: string;
@@ -53,10 +53,78 @@ export interface WooOrder {
   total_tax: string;
   shipping_total: string;
   discount_total: string;
+  date_created: string;
+  payment_method: string;
+  payment_method_title: string;
   billing: OrderAddress;
   shipping: Omit<OrderAddress, 'email' | 'phone'>;
   line_items: WooOrderLineItem[];
   coupon_lines: { id: number; code: string; discount: string }[];
+}
+
+/** Safe subset of order data — no full billing/shipping addresses */
+export interface SafeOrderData {
+  id: number;
+  number: string;
+  status: string;
+  total: string;
+  currency: string;
+  currency_symbol: string;
+  payment_method: string;
+  payment_method_title: string;
+  date_created: string;
+  subtotal: string;
+  total_tax: string;
+  shipping_total: string;
+  discount_total: string;
+  line_items: Array<{
+    id: number;
+    name: string;
+    quantity: number;
+    total: string;
+  }>;
+}
+
+export type StatusCategory = 'success' | 'failed' | 'pending' | 'cancelled' | 'on-hold';
+
+export function getStatusCategory(status: string): StatusCategory {
+  switch (status) {
+    case 'processing':
+    case 'completed':
+      return 'success';
+    case 'failed':
+      return 'failed';
+    case 'cancelled':
+      return 'cancelled';
+    case 'on-hold':
+      return 'on-hold';
+    default:
+      return 'pending';
+  }
+}
+
+export function toSafeOrderData(order: WooOrder): SafeOrderData {
+  return {
+    id: order.id,
+    number: order.number,
+    status: order.status,
+    total: order.total,
+    currency: order.currency,
+    currency_symbol: order.currency_symbol,
+    payment_method: order.payment_method,
+    payment_method_title: order.payment_method_title,
+    date_created: order.date_created,
+    subtotal: order.subtotal ?? '0',
+    total_tax: order.total_tax ?? '0',
+    shipping_total: order.shipping_total ?? '0',
+    discount_total: order.discount_total ?? '0',
+    line_items: order.line_items.map((li) => ({
+      id: li.id,
+      name: li.name,
+      quantity: li.quantity,
+      total: li.total,
+    })),
+  };
 }
 
 export interface CreateOrderResult {
@@ -115,6 +183,17 @@ function sanitizeAddress(addr: OrderAddress): OrderAddress {
     ...(addr.postcode?.trim() ? { postcode: addr.postcode.trim() } : {}),
     country: addr.country.trim().toUpperCase(),
   };
+}
+
+/**
+ * Fetch a single WooCommerce order by ID.
+ * Always bypasses cache (cache: no-store) — order status changes after payment.
+ * Throws WooCommerceApiError on non-OK responses (404 if not found).
+ */
+export async function getWooOrder(orderId: number): Promise<WooOrder> {
+  // revalidate=0 → Next.js treats this as cache:'no-store'
+  const result = await wcFetch<WooOrder>(`/orders/${orderId}`, {}, 0);
+  return result.data;
 }
 
 /** Parse a WooCommerce API error body into a user-readable message */
