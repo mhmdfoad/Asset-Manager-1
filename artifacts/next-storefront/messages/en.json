@@ -11,7 +11,7 @@
     "home": "Home",
     "shop": "Shop",
     "categories": "Categories",
-    "cart": "Cart",
+    "cart": "Shopping Cart",
     "wishlist": "Wishlist",
     "account": "My Account",
     "search": "Search",
@@ -52,6 +52,7 @@
   },
   "Product": {
     "addToCart": "Add to Cart",
+    "chooseOptions": "Choose Options",
     "outOfStock": "Out of Stock",
     "inStock": "In Stock",
     "onBackorder": "Available on Backorder",
@@ -65,7 +66,8 @@
     "variationsNote": "Product variations will be implemented in the next phase.",
     "notFound": "Product not found",
     "priceUnavailable": "Price unavailable",
-    "stockLeft": "left"
+    "stockLeft": "left",
+    "quantity": "Quantity"
   },
   "Category": {
     "notFound": "Category not found",
@@ -79,12 +81,27 @@
     "total": "Total",
     "subtotal": "Subtotal",
     "shipping": "Shipping",
+    "tax": "Tax",
     "checkout": "Checkout",
+    "proceedToCheckout": "Proceed to Checkout",
     "continueShopping": "Continue Shopping",
+    "viewCart": "View Cart",
+    "clearCart": "Clear cart",
     "remove": "Remove",
     "quantity": "Quantity",
+    "product": "Product",
+    "price": "Price",
+    "lineTotal": "Total",
+    "orderSummary": "Order Summary",
     "coupon": "Coupon code",
-    "applyCoupon": "Apply"
+    "applyCoupon": "Apply",
+    "shippingNote": "Shipping & taxes calculated at checkout",
+    "priceNote": "Prices shown for display only. Final price calculated at checkout.",
+    "itemAdded": "Item added to cart",
+    "itemRemoved": "Item removed from cart",
+    "cartCleared": "Cart cleared",
+    "browseProducts": "Browse Products",
+    "selectOptions": "Select options first"
   },
   "Checkout": {
     "title": "Checkout",

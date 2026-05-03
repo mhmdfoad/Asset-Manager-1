@@ -1,6 +1,6 @@
 import { setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
-import { getProductBySlug, getProductVariations, getRelatedProducts, formatPrice, stripHtml, decodeSlug } from '@/lib/products';
+import { getProductBySlug, getProductVariations, getRelatedProducts, stripHtml, decodeSlug } from '@/lib/products';
 import { sanitizeWooHtml, getPriceRange } from '@/lib/variations';
 import ProductGallery from '@/components/product/ProductGallery';
 import ProductPrice from '@/components/product/ProductPrice';
@@ -8,9 +8,9 @@ import StockBadge from '@/components/product/StockBadge';
 import ProductMeta from '@/components/product/ProductMeta';
 import ProductDescription from '@/components/product/ProductDescription';
 import VariationClient from '@/components/product/VariationClient';
+import SimpleProductClient from '@/components/product/SimpleProductClient';
 import ProductCard from '@/components/product/ProductCard';
 import { Link } from '@/i18n/navigation';
-import { ShoppingCart } from 'lucide-react';
 import type { Metadata } from 'next';
 
 interface ProductPageProps {
@@ -54,8 +54,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const relatedProducts = relatedResult.status === 'fulfilled' ? relatedResult.value.data : [];
 
   const hasSale = product.on_sale && product.sale_price && product.regular_price;
-  const isOutOfStock = product.stock_status === 'outofstock';
-
   const priceRange = isVariable ? getPriceRange(variations) : null;
 
   return (
@@ -91,17 +89,16 @@ export default async function ProductPage({ params }: ProductPageProps) {
       {/* Product Main */}
       <div className="container py-12">
         {isVariable && variations.length > 0 ? (
-          /* ——— Variable product: full client component manages state ——— */
+          /* Variable product — fully client-managed */
           <VariationClient product={product} variations={variations} locale={locale} />
         ) : (
-          /* ——— Simple product: server-rendered with client gallery ——— */
+          /* Simple product */
           <div className="grid gap-12 lg:grid-cols-2">
             {/* Gallery */}
             <ProductGallery images={product.images} productName={product.name} />
 
             {/* Details */}
             <div className="flex flex-col gap-5 lg:sticky lg:top-24 lg:self-start">
-              {/* Category */}
               {product.categories[0] && (
                 <Link
                   href={`/category/${decodeSlug(product.categories[0].slug)}`}
@@ -113,7 +110,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
               <h1 className="text-3xl font-bold text-primary-800 lg:text-4xl">{product.name}</h1>
 
-              {/* Price */}
               <ProductPrice
                 price={product.price}
                 regularPrice={product.regular_price}
@@ -123,7 +119,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 locale={locale}
               />
 
-              {/* Short description */}
               {product.short_description && (
                 <div
                   className="leading-relaxed text-neutral-600 [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:ps-4 [&_strong]:font-semibold"
@@ -131,7 +126,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 />
               )}
 
-              {/* Stock Status */}
               <StockBadge
                 stockStatus={product.stock_status}
                 stockQuantity={product.stock_quantity}
@@ -139,20 +133,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 locale={locale}
               />
 
-              {/* Add to Cart — placeholder */}
-              <button
-                type="button"
-                disabled={isOutOfStock}
-                data-product-id={product.id}
-                className="flex items-center justify-center gap-3 rounded-full bg-accent-500 px-8 py-4 text-base font-semibold text-white shadow-lg transition-all hover:bg-accent-400 hover:shadow-accent-500/30 hover:shadow-xl disabled:cursor-not-allowed disabled:bg-neutral-300 disabled:shadow-none"
-              >
-                <ShoppingCart className="h-5 w-5" />
-                {isOutOfStock
-                  ? (isAr ? 'نفد من المخزون' : 'Out of Stock')
-                  : (isAr ? 'أضف إلى السلة' : 'Add to Cart')}
-              </button>
+              {/* Add to Cart — client component with quantity selector */}
+              <SimpleProductClient product={product} locale={locale} />
 
-              {/* Meta */}
               <ProductMeta
                 sku={product.sku}
                 categories={product.categories}
@@ -182,7 +165,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </div>
         )}
 
-        {/* Description & Specifications */}
+        {/* Description & Specs */}
         <ProductDescription
           shortDescription=""
           fullDescription={product.description}

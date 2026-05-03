@@ -1,0 +1,258 @@
+Now start Phase 5 only: Cart System.
+
+The storefront already has:
+- Next.js foundation
+- Premium UI
+- WooCommerce products and categories integration
+- Product details page
+- WooCommerce variations support
+
+Do not rebuild the whole project.
+Do not change the overall design direction.
+Do not implement checkout/payment yet.
+Do not implement authentication yet.
+Do not implement the custom WordPress plugin yet.
+
+Goal:
+Build a clean, production-ready cart system for the Next.js Headless WooCommerce storefront.
+
+Important:
+In this phase, we only implement cart functionality.
+Checkout and order creation will be implemented in the next phase.
+
+Cart Strategy:
+Use a Next.js local cart state first, stored with Zustand and persisted to localStorage.
+The cart should store only safe product references and quantities, not trusted prices.
+
+Important Security Rule:
+Never trust prices from localStorage or the browser during checkout.
+For now, prices can be displayed from the product/variation data for UI purposes.
+In the next checkout phase, prices must be recalculated server-side from WooCommerce.
+
+Required Work:
+
+1. Cart Store
+
+Create a Zustand cart store in:
+
+store/cart-store.ts
+
+The cart store should support:
+- Add item
+- Remove item
+- Update quantity
+- Increase quantity
+- Decrease quantity
+- Clear cart
+- Get total item count
+- Get subtotal for display
+- Check if item already exists
+- Persist cart to localStorage
+
+Cart item structure should include:
+- product_id
+- variation_id optional
+- slug
+- name
+- image
+- selected_attributes optional
+- quantity
+- price_for_display only
+- regular_price_for_display optional
+- sale_price_for_display optional
+- stock_status optional
+- max_quantity optional if available
+
+Important:
+price_for_display is only for UI display.
+Do not treat it as trusted for checkout.
+
+2. Add to Cart from Product Page
+
+Update the product details page:
+
+For simple products:
+- Add to Cart button should add product_id and quantity.
+- Quantity selector should be available.
+- If product is out of stock, disable the button.
+
+For variable products:
+- Add to Cart button should only work after a valid variation is selected.
+- Store selected variation_id.
+- Store selected attributes.
+- If variation is out of stock, disable the button.
+- Show a clear message if user tries to add without selecting all required attributes.
+- Quantity selector should respect stock if available.
+
+3. Cart Drawer
+
+Create a modern cart drawer component:
+
+components/cart/CartDrawer.tsx
+
+Requirements:
+- Opens when clicking the cart icon in the header.
+- Shows cart items.
+- Shows product image, name, selected attributes, quantity controls, price, remove button.
+- Shows subtotal for display.
+- Shows buttons:
+  - View Cart
+  - Checkout
+- Checkout button can link to /checkout placeholder for now.
+- Empty cart state.
+- Smooth open/close animation if the project already uses animations.
+- RTL/LTR compatible.
+- Mobile-friendly.
+
+4. Cart Page
+
+Update /cart page:
+
+Requirements:
+- Show full cart table/card layout.
+- Product image
+- Product name
+- Selected variation attributes
+- Price
+- Quantity controls
+- Line total
+- Remove button
+- Cart summary
+- Subtotal
+- Placeholder shipping/tax note
+- Continue shopping button
+- Proceed to checkout button
+- Empty cart state
+
+5. Header Cart Count
+
+Update Header:
+- Cart icon should display real cart item count.
+- Count should update immediately when adding/removing items.
+- Clicking the cart icon should open the cart drawer.
+
+6. Product Cards
+
+Update ProductCard:
+- Add a placeholder “Add to Cart” behavior for simple products only if product type is simple and in stock.
+- For variable products, button should link to product page with text like “Choose options”.
+- Out-of-stock products should show disabled state.
+- Keep behavior clean and not overcomplicated.
+
+7. Quantity Controls
+
+Create reusable component:
+
+components/cart/QuantitySelector.tsx
+
+Requirements:
+- Increase/decrease buttons.
+- Manual quantity input if desired.
+- Minimum quantity 1.
+- Respect max quantity if provided.
+- Accessible labels.
+- RTL/LTR friendly.
+
+8. Toast Notifications
+
+Add toast feedback when:
+- Item added to cart
+- Item removed
+- Quantity updated
+- Cart cleared
+
+Use existing UI system or add a lightweight toast component.
+Do not add a heavy dependency unless already available.
+
+9. Currency and Price Formatting
+
+Create helper:
+
+lib/format.ts
+
+Function:
+formatPrice(amount, currency, locale)
+
+Requirements:
+- Support Arabic and English.
+- Default currency should come from product data if available, or fallback to store currency.
+- Keep it ready for WooCommerce integration.
+- Display prices consistently.
+
+10. Cart Persistence and Hydration
+
+Handle localStorage persistence carefully:
+- Avoid hydration mismatch in Next.js.
+- Cart drawer and count should not break SSR.
+- Use client components where needed.
+- Show count safely after hydration.
+
+11. i18n
+
+Add all cart-related UI strings to:
+- messages/ar.json
+- messages/en.json
+
+Examples:
+- Add to cart
+- View cart
+- Checkout
+- Cart
+- Your cart is empty
+- Continue shopping
+- Remove
+- Quantity
+- Subtotal
+- Product
+- Price
+- Total
+- Choose options
+- Out of stock
+- Item added to cart
+
+12. Code Quality
+
+- Keep cart store separate from UI.
+- Keep cart UI components reusable.
+- Do not trust client-side prices for future checkout.
+- Keep TypeScript clean.
+- Avoid large components.
+- Maintain the existing premium design.
+- Keep RTL/LTR support.
+- Do not break existing product/category/shop pages.
+
+Expected Output:
+1. Create Zustand cart store with persistence.
+2. Connect Add to Cart on product page.
+3. Connect ProductCard behavior.
+4. Add cart drawer.
+5. Update cart page.
+6. Update header cart count.
+7. Add quantity selector.
+8. Add toast notifications.
+9. Add price formatting helper.
+10. Add Arabic/English translations.
+11. Explain how the cart works.
+12. Explain security limitations of local cart prices.
+13. Explain what the next phase should be.
+
+Testing Requirements:
+Test with:
+- Simple product in stock.
+- Simple product out of stock.
+- Variable product with selected variation.
+- Variable product without selected variation.
+- Out-of-stock variation.
+- Increasing quantity.
+- Decreasing quantity.
+- Removing item.
+- Clearing cart.
+- Refreshing page and confirming cart persistence.
+- Arabic RTL.
+- English LTR.
+- Mobile layout.
+
+Final reminder:
+This is Phase 5 only.
+Implement cart functionality only.
+Do not implement checkout, payment, authentication, or the WordPress custom plugin yet.

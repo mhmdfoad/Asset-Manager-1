@@ -7,6 +7,9 @@ import ProductPrice from './ProductPrice';
 import StockBadge from './StockBadge';
 import VariationSelector from './VariationSelector';
 import ProductMeta from './ProductMeta';
+import QuantitySelector from '@/components/cart/QuantitySelector';
+import { useCartStore } from '@/store/cart-store';
+import { toast } from '@/store/toast-store';
 import {
   findMatchingVariation,
   getAvailableOptions,
@@ -15,6 +18,7 @@ import {
   normalizeAttributeName,
 } from '@/lib/variations';
 import type { WooProduct, WooProductVariation } from '@/types/woocommerce';
+import type { CartItem } from '@/types/cart';
 
 interface VariationClientProps {
   product: WooProduct;
@@ -24,6 +28,8 @@ interface VariationClientProps {
 
 export default function VariationClient({ product, variations, locale }: VariationClientProps) {
   const isAr = locale === 'ar';
+  const [quantity, setQuantity] = useState(1);
+  const { addItem, openDrawer } = useCartStore();
 
   const variationAttributes = product.attributes.filter((a) => a.variation);
 
@@ -31,12 +37,10 @@ export default function VariationClient({ product, variations, locale }: Variati
     const init: Record<string, string> = {};
     for (const da of product.default_attributes) {
       const key = normalizeAttributeName(da.name);
-      // WooCommerce may return the option as a URL-encoded slug — decode it
       let rawOption = da.option;
       let decodedOption = rawOption;
       try { decodedOption = decodeURIComponent(rawOption); } catch {}
 
-      // Find the exact display option that matches (case-insensitive, slug or label)
       const attr = variationAttributes.find(a => normalizeAttributeName(a.name) === key);
       if (attr) {
         const matchingOption = attr.options.find(
@@ -46,7 +50,6 @@ export default function VariationClient({ product, variations, locale }: Variati
         );
         if (matchingOption) init[key] = matchingOption;
       } else {
-        // Fallback: use decoded option directly
         if (decodedOption) init[key] = decodedOption;
       }
     }
@@ -66,16 +69,14 @@ export default function VariationClient({ product, variations, locale }: Variati
   );
 
   const selectionComplete = isSelectionComplete(variationAttributes, selectedAttributes);
-
   const priceRange = useMemo(() => getPriceRange(variations), [variations]);
 
   const handleSelect = (attrKey: string, value: string) => {
     setSelectedAttributes((prev) => ({ ...prev, [attrKey]: value }));
+    setQuantity(1);
   };
 
-  const displayImage =
-    matchedVariation?.image?.src ? matchedVariation.image : null;
-
+  const displayImage = matchedVariation?.image?.src ? matchedVariation.image : null;
   const displayStockStatus = matchedVariation?.stock_status ?? product.stock_status;
   const displayStockQuantity = matchedVariation?.stock_quantity ?? product.stock_quantity;
   const displayManageStock = matchedVariation?.manage_stock ?? product.manage_stock;
@@ -83,6 +84,35 @@ export default function VariationClient({ product, variations, locale }: Variati
   const isOutOfStock = displayStockStatus === 'outofstock';
 
   const canAddToCart = selectionComplete && !isOutOfStock && (matchedVariation?.purchasable ?? false);
+  const maxQty = displayManageStock && displayStockQuantity ? displayStockQuantity : 999;
+
+  const handleAddToCart = () => {
+    if (!matchedVariation || !canAddToCart) return;
+
+    const item: CartItem = {
+      product_id: product.id,
+      variation_id: matchedVariation.id,
+      slug: product.slug,
+      name: product.name,
+      image: displayImage?.src ?? product.images[0]?.src ?? undefined,
+      selected_attributes: selectedAttributes,
+      quantity,
+      price_for_display: matchedVariation.price || product.price,
+      regular_price_for_display: matchedVariation.regular_price || undefined,
+      sale_price_for_display: matchedVariation.on_sale ? (matchedVariation.sale_price || undefined) : undefined,
+      stock_status: displayStockStatus,
+      max_quantity: maxQty < 999 ? maxQty : undefined,
+    };
+
+    addItem(item);
+    openDrawer();
+    toast(
+      isAr
+        ? `تمت إضافة "${product.name}" إلى السلة`
+        : `"${product.name}" added to cart`,
+      'success'
+    );
+  };
 
   return (
     <div className="grid gap-10 lg:grid-cols-2">
@@ -97,7 +127,6 @@ export default function VariationClient({ product, variations, locale }: Variati
 
       {/* Details */}
       <div className="flex flex-col gap-5 lg:sticky lg:top-24 lg:self-start">
-        {/* Category link */}
         {product.categories[0] && (
           <span className="text-sm font-medium uppercase tracking-wide text-accent-500">
             {product.categories[0].name}
@@ -106,7 +135,7 @@ export default function VariationClient({ product, variations, locale }: Variati
 
         <h1 className="text-3xl font-bold text-primary-800 lg:text-4xl">{product.name}</h1>
 
-        {/* Price — show range before selection, exact after */}
+        {/* Price */}
         {matchedVariation ? (
           <ProductPrice
             price={matchedVariation.price}
@@ -127,7 +156,7 @@ export default function VariationClient({ product, variations, locale }: Variati
           />
         )}
 
-        {/* Variation selector */}
+        {/* Variation selectors */}
         <VariationSelector
           attributes={variationAttributes}
           selectedAttributes={selectedAttributes}
@@ -136,7 +165,7 @@ export default function VariationClient({ product, variations, locale }: Variati
           locale={locale}
         />
 
-        {/* Status messages */}
+        {/* Stock status */}
         {selectionComplete && matchedVariation ? (
           <StockBadge
             stockStatus={displayStockStatus}
@@ -154,26 +183,35 @@ export default function VariationClient({ product, variations, locale }: Variati
           </p>
         )}
 
-        {/* Add to Cart — placeholder, ready with variation_id */}
-        <button
-          type="button"
-          disabled={!canAddToCart}
-          data-product-id={product.id}
-          data-variation-id={matchedVariation?.id ?? ''}
-          data-selected-attributes={JSON.stringify(selectedAttributes)}
-          className="flex items-center justify-center gap-3 rounded-full bg-accent-500 px-8 py-4 text-base font-semibold text-white shadow-lg transition-all hover:bg-accent-400 hover:shadow-accent-500/30 hover:shadow-xl disabled:cursor-not-allowed disabled:bg-neutral-300 disabled:shadow-none"
-        >
-          <ShoppingCart className="h-5 w-5" />
-          {!selectionComplete
-            ? (isAr ? 'اختر الخيارات أولاً' : 'Select Options First')
-            : isOutOfStock
-            ? (isAr ? 'نفد من المخزون' : 'Out of Stock')
-            : !matchedVariation
-            ? (isAr ? 'غير متاح' : 'Not Available')
-            : (isAr ? 'أضف إلى السلة' : 'Add to Cart')}
-        </button>
+        {/* Quantity + Add to Cart */}
+        <div className="flex items-center gap-3">
+          {canAddToCart && (
+            <QuantitySelector
+              quantity={quantity}
+              min={1}
+              max={maxQty}
+              onChange={setQuantity}
+              locale={locale}
+            />
+          )}
+          <button
+            type="button"
+            disabled={!canAddToCart}
+            onClick={handleAddToCart}
+            className="flex flex-1 items-center justify-center gap-3 rounded-full bg-accent-500 px-8 py-4 text-base font-semibold text-white shadow-lg transition-all hover:bg-accent-400 hover:shadow-accent-500/30 hover:shadow-xl disabled:cursor-not-allowed disabled:bg-neutral-300 disabled:shadow-none"
+          >
+            <ShoppingCart className="h-5 w-5" />
+            {!selectionComplete
+              ? (isAr ? 'اختر الخيارات أولاً' : 'Select Options First')
+              : isOutOfStock
+              ? (isAr ? 'نفد من المخزون' : 'Out of Stock')
+              : !matchedVariation
+              ? (isAr ? 'غير متاح' : 'Not Available')
+              : (isAr ? 'أضف إلى السلة' : 'Add to Cart')}
+          </button>
+        </div>
 
-        {/* Meta: SKU, categories, tags */}
+        {/* Meta */}
         <ProductMeta
           sku={displaySku}
           categories={product.categories}

@@ -9,22 +9,23 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "clsx": "catalog:",
+    "lucide-react": "catalog:",
     "next": "^15.3.1",
+    "next-intl": "^3.26.3",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "next-intl": "^3.26.3",
     "server-only": "^0.0.1",
-    "clsx": "catalog:",
     "tailwind-merge": "catalog:",
-    "lucide-react": "catalog:"
+    "zustand": "^5.0.12"
   },
   "devDependencies": {
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "typescript": "~5.9.2",
-    "tailwindcss": "^3.4.17",
+    "autoprefixer": "^10.4.19",
     "postcss": "^8.4.38",
-    "autoprefixer": "^10.4.19"
+    "tailwindcss": "^3.4.17",
+    "typescript": "~5.9.2"
   }
 }

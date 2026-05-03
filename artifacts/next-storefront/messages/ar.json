@@ -11,7 +11,7 @@
     "home": "الرئيسية",
     "shop": "المتجر",
     "categories": "الفئات",
-    "cart": "السلة",
+    "cart": "سلة التسوق",
     "wishlist": "المفضلة",
     "account": "حسابي",
     "search": "البحث",
@@ -52,6 +52,7 @@
   },
   "Product": {
     "addToCart": "أضف إلى السلة",
+    "chooseOptions": "اختر الخيارات",
     "outOfStock": "نفد من المخزون",
     "inStock": "متوفر في المخزون",
     "onBackorder": "متاح عند الطلب",
@@ -65,7 +66,8 @@
     "variationsNote": "سيتم تطبيق خيارات المنتج في المرحلة القادمة.",
     "notFound": "المنتج غير موجود",
     "priceUnavailable": "السعر غير متاح",
-    "stockLeft": "متبقي"
+    "stockLeft": "متبقي",
+    "quantity": "الكمية"
   },
   "Category": {
     "notFound": "الفئة غير موجودة",
@@ -79,12 +81,27 @@
     "total": "الإجمالي",
     "subtotal": "المجموع الجزئي",
     "shipping": "الشحن",
+    "tax": "الضريبة",
     "checkout": "إتمام الشراء",
+    "proceedToCheckout": "إتمام الشراء",
     "continueShopping": "متابعة التسوق",
+    "viewCart": "عرض السلة",
+    "clearCart": "تفريغ السلة",
     "remove": "حذف",
     "quantity": "الكمية",
+    "product": "المنتج",
+    "price": "السعر",
+    "lineTotal": "إجمالي السطر",
+    "orderSummary": "ملخص الطلب",
     "coupon": "رمز الخصم",
-    "applyCoupon": "تطبيق"
+    "applyCoupon": "تطبيق",
+    "shippingNote": "الشحن والضرائب تُحسب عند الدفع",
+    "priceNote": "الأسعار للعرض فقط. السعر النهائي يُحسب عند إتمام الطلب.",
+    "itemAdded": "تمت إضافة المنتج إلى السلة",
+    "itemRemoved": "تم حذف المنتج من السلة",
+    "cartCleared": "تم تفريغ السلة",
+    "browseProducts": "تصفح المنتجات",
+    "selectOptions": "اختر الخيارات أولاً"
   },
   "Checkout": {
     "title": "إتمام الشراء",
