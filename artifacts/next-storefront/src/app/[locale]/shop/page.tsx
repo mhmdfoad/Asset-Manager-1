@@ -104,7 +104,7 @@ export default async function ShopPage({ params, searchParams }: ShopPageProps) 
 
       {/* Products */}
       <div className="container py-10">
-        <ProductGrid products={products} locale={locale} />
+        <ProductGrid products={products} locale={locale} firstPriority />
 
         {/* Pagination */}
         {totalPages > 1 && (

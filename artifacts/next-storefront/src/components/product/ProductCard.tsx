@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
-import { formatPrice } from '@/lib/products';
+import { formatPrice, decodeSlug } from '@/lib/products';
 import type { WooProduct } from '@/types/woocommerce';
 import { cn } from '@/lib/utils';
 
@@ -8,9 +8,10 @@ interface ProductCardProps {
   product: WooProduct;
   locale: string;
   className?: string;
+  priority?: boolean;
 }
 
-export default function ProductCard({ product, locale, className }: ProductCardProps) {
+export default function ProductCard({ product, locale, className, priority = false }: ProductCardProps) {
   const isAr = locale === 'ar';
   const primaryImage = product.images[0];
   const primaryCategory = product.categories[0];
@@ -19,7 +20,7 @@ export default function ProductCard({ product, locale, className }: ProductCardP
 
   return (
     <Link
-      href={`/product/${product.slug}`}
+      href={`/product/${decodeSlug(product.slug)}`}
       className={cn(
         'group relative flex flex-col rounded-2xl bg-white shadow-sm ring-1 ring-neutral-200',
         'transition-all duration-200 hover:shadow-md hover:ring-accent-300',
@@ -36,6 +37,7 @@ export default function ProductCard({ product, locale, className }: ProductCardP
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             className="object-cover transition-transform duration-300 group-hover:scale-105"
+            priority={priority}
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-neutral-100">

@@ -1,7 +1,7 @@
 import { setRequestLocale, getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
 import Image from 'next/image';
-import { getFeaturedProducts, getLatestProducts, getCategories, formatPrice } from '@/lib/products';
+import { getFeaturedProducts, getLatestProducts, getCategories, decodeSlug } from '@/lib/products';
 import ProductCard from '@/components/product/ProductCard';
 import type { Metadata } from 'next';
 
@@ -45,6 +45,7 @@ export default async function HomePage({
     categoriesResult.status === 'fulfilled' ? categoriesResult.value.data : [];
 
   const displayProducts = featuredProducts.length > 0 ? featuredProducts : latestProducts;
+  const showFeaturedSection = featuredProducts.length > 0;
 
   return (
     <>
@@ -88,7 +89,7 @@ export default async function HomePage({
               {categories.slice(0, 8).map((category) => (
                 <Link
                   key={category.id}
-                  href={`/category/${category.slug}`}
+                  href={`/category/${decodeSlug(category.slug)}`}
                   className="group relative aspect-square overflow-hidden rounded-2xl bg-neutral-200"
                 >
                   {category.image?.src ? (

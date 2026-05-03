@@ -1,6 +1,6 @@
 import { setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
-import { getProductBySlug, getRelatedProducts, formatPrice, stripHtml } from '@/lib/products';
+import { getProductBySlug, getRelatedProducts, formatPrice, stripHtml, decodeSlug } from '@/lib/products';
 import ProductImageGallery from '@/components/product/ProductImageGallery';
 import ProductCard from '@/components/product/ProductCard';
 import { Link } from '@/i18n/navigation';
@@ -65,7 +65,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               <>
                 <span>/</span>
                 <Link
-                  href={`/category/${product.categories[0].slug}`}
+                  href={`/category/${decodeSlug(product.categories[0].slug)}`}
                   className="hover:text-accent-600"
                 >
                   {product.categories[0].name}
@@ -89,7 +89,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             {/* Category */}
             {product.categories[0] && (
               <Link
-                href={`/category/${product.categories[0].slug}`}
+                href={`/category/${decodeSlug(product.categories[0].slug)}`}
                 className="text-sm font-medium uppercase tracking-wide text-accent-500 hover:text-accent-600"
               >
                 {product.categories[0].name}
@@ -187,7 +187,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   {product.categories.map((cat, i) => (
                     <span key={cat.id}>
                       <Link
-                        href={`/category/${cat.slug}`}
+                        href={`/category/${decodeSlug(cat.slug)}`}
                         className="hover:text-accent-600"
                       >
                         {cat.name}

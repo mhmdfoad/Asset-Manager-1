@@ -5,9 +5,10 @@ interface ProductGridProps {
   products: WooProduct[];
   locale: string;
   emptyMessage?: string;
+  firstPriority?: boolean;
 }
 
-export default function ProductGrid({ products, locale, emptyMessage }: ProductGridProps) {
+export default function ProductGrid({ products, locale, emptyMessage, firstPriority = false }: ProductGridProps) {
   const isAr = locale === 'ar';
 
   if (products.length === 0) {
@@ -42,8 +43,8 @@ export default function ProductGrid({ products, locale, emptyMessage }: ProductG
 
   return (
     <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-      {products.map((product) => (
-        <ProductCard key={product.id} product={product} locale={locale} />
+      {products.map((product, index) => (
+        <ProductCard key={product.id} product={product} locale={locale} priority={firstPriority && index === 0} />
       ))}
     </div>
   );

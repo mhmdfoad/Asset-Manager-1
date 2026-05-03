@@ -15,6 +15,14 @@ function buildRemotePatterns(): NonNullable<NonNullable<NextConfig['images']>['r
         hostname: parsed.hostname,
         pathname: '/**',
       });
+      // Also allow www subdomain variant
+      if (!parsed.hostname.startsWith('www.')) {
+        patterns.push({
+          protocol: parsed.protocol.replace(':', '') as 'https' | 'http',
+          hostname: `www.${parsed.hostname}`,
+          pathname: '/**',
+        });
+      }
     } catch {
       // Invalid URL — skip image domain configuration
     }

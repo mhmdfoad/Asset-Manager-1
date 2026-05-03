@@ -51,9 +51,10 @@ export async function getSaleProducts(limit = 8) {
 export async function getProductBySlug(slug: string): Promise<WooProduct | null> {
   if (!isConfigured()) return null;
   try {
+    const decoded = decodeSlug(slug);
     const result = await wcFetch<WooProduct[]>(
       '/products',
-      { slug, status: 'publish' },
+      { slug: decoded, status: 'publish' },
       60
     );
     return result.data[0] ?? null;
@@ -72,11 +73,19 @@ export async function getProductsByCategory(
 export async function getRelatedProducts(relatedIds: number[], limit = 4) {
   if (!isConfigured() || relatedIds.length === 0) return { data: [], total: 0, totalPages: 0 };
   try {
-    return await wcFetch<WooProduct[]>(
+    const uniqueIds = [...new Set(relatedIds)].slice(0, limit);
+    const result = await wcFetch<WooProduct[]>(
       '/products',
-      { include: relatedIds.slice(0, limit).join(','), per_page: limit },
+      { include: uniqueIds.join(','), per_page: limit },
       60
     );
+    const seen = new Set<number>();
+    const deduped = result.data.filter((p) => {
+      if (seen.has(p.id)) return false;
+      seen.add(p.id);
+      return true;
+    });
+    return { ...result, data: deduped };
   } catch {
     return { data: [], total: 0, totalPages: 0 };
   }
@@ -106,15 +115,29 @@ export async function getCategories(params: WooCategoriesParams = {}) {
 export async function getCategoryBySlug(slug: string): Promise<WooCategory | null> {
   if (!isConfigured()) return null;
   try {
+    const decoded = decodeSlug(slug);
     const result = await wcFetch<WooCategory[]>(
       '/products/categories',
-      { slug, hide_empty: false },
+      { slug: decoded, hide_empty: false },
       300
     );
     return result.data[0] ?? null;
   } catch {
     return null;
   }
+}
+
+export function decodeSlug(slug: string): string {
+  try {
+    return decodeURIComponent(slug);
+  } catch {
+    return slug;
+  }
+}
+
+export function encodeSlugForUrl(slug: string): string {
+  const decoded = decodeSlug(slug);
+  return encodeURIComponent(decoded);
 }
 
 export function parseSortOption(sort: string | undefined): Pick<WooProductsParams, 'orderby' | 'order'> {
