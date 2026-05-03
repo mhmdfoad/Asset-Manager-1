@@ -1,0 +1,326 @@
+Now start Phase 5 only: Checkout + Create WooCommerce Order.
+
+The storefront already has:
+- Next.js foundation
+- Premium UI
+- WooCommerce products and categories integration
+- Product details and variations support
+- Local cart system with Zustand and localStorage
+
+Do not rebuild the whole project.
+Do not change the overall design direction.
+Do not implement full payment gateway integration manually.
+Do not implement customer account/authentication yet.
+Do not implement the custom WordPress plugin yet.
+
+Goal:
+Build a secure checkout flow that takes the current cart, collects customer billing/shipping details, creates a WooCommerce order server-side, and redirects the customer to the WooCommerce payment URL.
+
+Important:
+WooCommerce must remain the source of truth for prices, totals, taxes, shipping, coupons, and order status.
+
+Critical Security Rule:
+Never trust product prices, totals, discounts, or shipping values from the browser/localStorage.
+The browser should only send:
+- product_id
+- variation_id if available
+- quantity
+- selected attributes if needed for validation
+- customer billing/shipping fields
+- coupon code if available
+- customer note if available
+
+The server must validate and create the order using WooCommerce REST API.
+
+Required Work:
+
+1. Checkout Page UI
+
+Update /checkout page with a polished checkout layout.
+
+Sections:
+- Contact information
+- Billing address
+- Shipping address
+- Same as billing checkbox
+- Order notes
+- Coupon code input
+- Order summary from local cart for display only
+- Place order button
+
+Fields:
+- First name
+- Last name
+- Email
+- Phone
+- Country
+- City
+- State/Region
+- Address line 1
+- Address line 2 optional
+- Postcode optional
+- Company optional
+- Order notes optional
+
+Requirements:
+- Use React Hook Form.
+- Use Zod for validation.
+- Add Arabic and English validation messages.
+- RTL/LTR compatible.
+- Mobile-friendly.
+- Premium UI matching the current design.
+- Disable place order button if cart is empty.
+- Show clear error messages.
+- Show loading state while creating order.
+
+2. Checkout Validation
+
+Create validation schema:
+
+lib/validations/checkout.ts
+
+Requirements:
+- Validate email format.
+- Validate required names.
+- Validate phone.
+- Validate country.
+- Validate city.
+- Validate address.
+- Support Arabic and English messages.
+- Keep postcode optional unless needed.
+- Validate shipping fields if shipping is different from billing.
+
+3. Checkout API Route
+
+Create secure server route:
+
+app/api/checkout/create-order/route.ts
+
+This API route should:
+- Accept POST only.
+- Read cart items and customer data from request body.
+- Validate request body using Zod.
+- Reject empty cart.
+- Reject invalid product IDs.
+- Reject invalid quantities.
+- Never trust price values from client.
+- Create WooCommerce order server-side using API credentials from environment variables.
+- Return payment_url and order_id.
+- Handle errors cleanly.
+
+4. WooCommerce Order Creation
+
+Use WooCommerce REST API:
+
+POST /wp-json/wc/v3/orders
+
+Order payload should include:
+- payment_method
+- payment_method_title
+- set_paid: false
+- billing data
+- shipping data
+- line_items:
+  - product_id
+  - variation_id if exists
+  - quantity
+- coupon_lines if coupon exists
+- customer_note if exists
+- status: pending
+
+Important:
+Do not send prices from frontend.
+Let WooCommerce calculate item prices from product IDs and variation IDs.
+
+5. Payment Method Handling
+
+For this phase:
+- Do not build custom payment gateway UI.
+- Add a simple payment method selector based on available WooCommerce gateways if already easy to fetch server-side.
+- Or start with one configurable payment method value like:
+  - payment_method: "cod" for testing
+  - or selected gateway ID if known
+- The goal is to create the order and get WooCommerce payment_url.
+
+If payment_url exists:
+- Redirect customer to payment_url.
+
+If payment_url does not exist:
+- If payment method is Cash on Delivery, redirect to local order success/pending page.
+- Otherwise show a clear error.
+
+6. WooCommerce API Client
+
+Extend existing WooCommerce client:
+
+lib/woocommerce.ts
+
+Add support for:
+- POST requests
+- Creating orders
+- Fetching payment gateways if needed
+
+Create helper:
+
+lib/orders.ts
+
+Functions:
+- createWooCommerceOrder(orderInput)
+- getWooCommercePaymentGateways() optional
+- verifyOrder(orderId) optional for success page later
+
+7. Checkout Redirect Flow
+
+After successful API response:
+- If response has payment_url:
+  - Redirect browser to WooCommerce payment URL.
+- If no payment_url but order created:
+  - Redirect to /order/pending?order_id=...
+- Show loading state during redirect.
+
+8. Order Result Pages
+
+Create or improve pages:
+
+/order/success
+/order/failed
+/order/pending
+
+For now:
+- Show polished placeholder pages.
+- Read order_id from query string.
+- Do not fully verify order status yet unless simple.
+- Explain that real order verification will be improved in the next phase.
+- Keep UI premium and consistent.
+
+9. Coupon Support
+
+In this phase:
+- If coupon code exists in cart/checkout input, send it as coupon_lines:
+  [{ code: "COUPONCODE" }]
+- If WooCommerce rejects coupon, show error message.
+- Do not implement advanced coupon validation UI unless simple.
+
+10. Shipping Methods
+
+For this phase:
+- Keep shipping simple.
+- Send shipping address to WooCommerce.
+- Do not implement live shipping rates yet unless already available.
+- Add a placeholder shipping note in the UI.
+- Advanced shipping method selection can be a later phase.
+
+11. Cart Clearing
+
+After order is created successfully:
+- Do not immediately clear cart before redirect, to avoid losing cart if payment fails.
+- Clear cart only on success page later after verifying order status.
+- For now, optionally store pending order id in session/local state.
+
+12. Error Handling
+
+Handle:
+- Empty cart
+- Invalid checkout data
+- Product not found
+- Variation not found
+- Out of stock
+- WooCommerce API error
+- Invalid coupon
+- Network error
+- Missing payment URL
+- Environment variable missing
+
+Show clean user-friendly messages.
+
+13. i18n
+
+Add all checkout/order related strings to:
+- messages/ar.json
+- messages/en.json
+
+Examples:
+- Checkout
+- Contact information
+- Billing address
+- Shipping address
+- Same as billing
+- Place order
+- Creating order
+- Order notes
+- Coupon code
+- Apply coupon
+- Payment method
+- Your order has been created
+- Redirecting to payment
+- Payment failed
+- Order pending
+- Please complete your payment
+- Required field
+- Invalid email
+- Invalid phone
+- Cart is empty
+
+14. Security Requirements
+
+- API credentials remain server-side only.
+- No WooCommerce keys exposed to client.
+- Validate all request bodies.
+- Rate limit checkout API route if possible.
+- Do not accept client prices.
+- Do not accept client totals.
+- Do not accept arbitrary payment data.
+- Sanitize user input before sending to WooCommerce.
+- Use HTTPS in production.
+- Handle CORS safely.
+
+15. Code Quality
+
+- Keep checkout form separate from API logic.
+- Keep order creation in lib/orders.ts.
+- Keep validation schemas reusable.
+- Keep UI components reusable.
+- Avoid huge components.
+- Use TypeScript cleanly.
+- Keep server/client boundaries clear.
+- Maintain current design system.
+- Do not break cart/product/category pages.
+
+Expected Output:
+1. Build checkout page UI.
+2. Add React Hook Form + Zod validation.
+3. Add checkout validation schema.
+4. Create secure /api/checkout/create-order route.
+5. Extend WooCommerce API client to support POST.
+6. Add createWooCommerceOrder helper.
+7. Create WooCommerce order from cart data.
+8. Redirect customer to WooCommerce payment_url.
+9. Add order success/failed/pending pages.
+10. Add Arabic/English translations.
+11. Explain how to configure WooCommerce payment methods.
+12. Explain how to test order creation.
+13. Explain why client prices are not trusted.
+14. Explain what the next phase should be.
+
+Testing Requirements:
+Test with:
+- Empty cart.
+- Simple product.
+- Variable product with selected variation.
+- Invalid variation.
+- Out-of-stock product if WooCommerce returns error.
+- Invalid email.
+- Missing required address fields.
+- Coupon code valid.
+- Coupon code invalid.
+- COD payment method.
+- Gateway payment method with payment_url.
+- Arabic RTL.
+- English LTR.
+- Mobile layout.
+- Missing environment variables.
+
+Final reminder:
+This is Phase 6 only.
+Implement checkout and WooCommerce order creation only.
+Do not implement full payment verification, customer accounts, authentication, or the WordPress custom plugin yet.

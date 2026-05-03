@@ -78,6 +78,33 @@ export async function wcFetch<T>(
   return { data, total, totalPages };
 }
 
+/**
+ * POST request to WooCommerce REST API.
+ * Use for mutations (creating orders, etc.). Never cached.
+ */
+export async function wcPost<T>(endpoint: string, body: unknown): Promise<T> {
+  const { storeUrl, consumerKey, consumerSecret } = getConfig();
+  const url = `${storeUrl}/wp-json/wc/v3${endpoint}`;
+  const credentials = Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64');
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      Authorization: `Basic ${credentials}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+    cache: 'no-store',
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => response.statusText);
+    throw new WooCommerceApiError(response.status, text);
+  }
+
+  return (await response.json()) as T;
+}
+
 export function isConfigured(): boolean {
   return !!(
     process.env.WOOCOMMERCE_STORE_URL &&

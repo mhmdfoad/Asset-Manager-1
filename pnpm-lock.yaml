@@ -64,7 +64,7 @@ catalogs:
       specifier: ^7.3.2
       version: 7.3.2
     zod:
-      specifier: ^3.25.76
+      specifier: 3.25.76
       version: 3.25.76
 
 overrides:
@@ -398,6 +398,9 @@ importers:
 
   artifacts/next-storefront:
     dependencies:
+      '@hookform/resolvers':
+        specifier: ^3.10.0
+        version: 3.10.0(react-hook-form@7.71.2(react@19.1.0))
       clsx:
         specifier: 'catalog:'
         version: 2.1.1
@@ -416,12 +419,18 @@ importers:
       react-dom:
         specifier: 'catalog:'
         version: 19.1.0(react@19.1.0)
+      react-hook-form:
+        specifier: ^7.71.2
+        version: 7.71.2(react@19.1.0)
       server-only:
         specifier: ^0.0.1
         version: 0.0.1
       tailwind-merge:
         specifier: 'catalog:'
         version: 3.5.0
+      zod:
+        specifier: 'catalog:'
+        version: 3.25.76
       zustand:
         specifier: ^5.0.12
         version: 5.0.12(@types/react@19.2.14)(react@19.1.0)(use-sync-external-store@1.6.0(react@19.1.0))
