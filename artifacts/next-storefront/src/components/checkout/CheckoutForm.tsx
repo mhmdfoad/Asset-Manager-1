@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, type FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import {
@@ -103,6 +103,7 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [validationError, setValidationError] = useState(false);
+  const [failedFieldLabels, setFailedFieldLabels] = useState<string[]>([]);
   const [couponOpen, setCouponOpen] = useState(false);
   const [prefillNoticeDismissed, setPrefillNoticeDismissed] = useState(false);
 
@@ -156,28 +157,73 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
 
   const sameAsBilling = watch('sameAsBilling');
 
+  // Human-readable labels for each billing field (Arabic / English)
+  const fieldLabels = useMemo(
+    () =>
+      isAr
+        ? {
+            first_name: 'الاسم الأول',
+            last_name: 'اسم العائلة',
+            email: 'البريد الإلكتروني',
+            phone: 'رقم الجوال',
+            country: 'الدولة',
+            city: 'المدينة',
+            address_1: 'العنوان',
+          }
+        : {
+            first_name: 'First Name',
+            last_name: 'Last Name',
+            email: 'Email',
+            phone: 'Phone Number',
+            country: 'Country',
+            city: 'City',
+            address_1: 'Address',
+          },
+    [isAr]
+  );
+
   // Scroll to first invalid field when react-hook-form blocks submission.
   // Without this, the user is scrolled to the button and sees nothing happen.
-  const onValidationError = useCallback(() => {
-    setValidationError(true);
-    if (formRef.current) {
-      // Find the first red-bordered input/select inside the form
-      const firstInvalid = formRef.current.querySelector<HTMLElement>(
-        'input.border-red-300, select.border-red-300, textarea.border-red-300'
-      );
-      if (firstInvalid) {
-        firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        firstInvalid.focus({ preventScroll: true });
-      } else {
-        formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const onValidationError = useCallback(
+    (fieldErrors: FieldErrors<CheckoutFormData>) => {
+      // Extract human-readable names of failing billing fields
+      const billingErrors = fieldErrors.billing as
+        | Record<string, { message?: string }>
+        | undefined;
+      const failing = Object.keys(billingErrors ?? {})
+        .filter((k) => billingErrors?.[k]?.message)
+        .map((k) => fieldLabels[k as keyof typeof fieldLabels] ?? k);
+
+      const shippingErrors = fieldErrors.shipping as
+        | Record<string, { message?: string }>
+        | undefined;
+      const failingShipping = Object.keys(shippingErrors ?? {})
+        .filter((k) => shippingErrors?.[k]?.message)
+        .map((k) => fieldLabels[k as keyof typeof fieldLabels] ?? k);
+
+      setFailedFieldLabels([...failing, ...failingShipping]);
+      setValidationError(true);
+
+      if (formRef.current) {
+        const firstInvalid = formRef.current.querySelector<HTMLElement>(
+          'input.border-red-300, select.border-red-300, textarea.border-red-300'
+        );
+        if (firstInvalid) {
+          firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          firstInvalid.focus({ preventScroll: true });
+        } else {
+          formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
       }
-    }
-  }, []);
+    },
+    [fieldLabels]
+  );
 
   const onSubmit = async (data: CheckoutFormData) => {
     if (cartEmpty) return;
 
     setValidationError(false);
+    setFailedFieldLabels([]);
     setIsSubmitting(true);
     setServerError(null);
 
@@ -297,7 +343,16 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
           {validationError && (
             <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
               <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0" />
-              <p className="text-sm leading-relaxed">{l.validationError}</p>
+              <div className="text-sm leading-relaxed">
+                <p>{l.validationError}</p>
+                {failedFieldLabels.length > 0 && (
+                  <ul className="mt-1.5 list-disc ps-4">
+                    {failedFieldLabels.map((label) => (
+                      <li key={label}>{label}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             </div>
           )}
 

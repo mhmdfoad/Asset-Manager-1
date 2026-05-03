@@ -26,7 +26,7 @@ function getMessages(isAr: boolean): Messages {
         emailRequired: 'البريد الإلكتروني مطلوب',
         emailInvalid: 'بريد إلكتروني غير صحيح',
         phoneRequired: 'رقم الجوال مطلوب',
-        phoneInvalid: 'رقم جوال غير صحيح (أرقام، +، مسافات)',
+        phoneInvalid: 'رقم الجوال غير صحيح (7 أرقام على الأقل)',
         countryRequired: 'الدولة مطلوبة',
         cityRequired: 'المدينة مطلوبة',
         addressRequired: 'العنوان مطلوب',
@@ -38,7 +38,7 @@ function getMessages(isAr: boolean): Messages {
         emailRequired: 'Email address is required',
         emailInvalid: 'Invalid email address',
         phoneRequired: 'Phone number is required',
-        phoneInvalid: 'Invalid phone number (digits, +, spaces)',
+        phoneInvalid: 'Invalid phone number (at least 7 digits)',
         countryRequired: 'Country is required',
         cityRequired: 'City is required',
         addressRequired: 'Address is required',
@@ -56,11 +56,14 @@ export function createBillingSchema(isAr: boolean) {
     last_name: z.string().min(1, m.lastName).max(100),
     company: z.string().max(200).optional().or(z.literal('')),
     email: z.string().min(1, m.emailRequired).email(m.emailInvalid),
+    // Lenient phone validation: any 7-25 character string that looks like a phone.
+    // We intentionally avoid strict character-set regexes — phone numbers vary widely
+    // (dots, slashes, dashes, country prefixes) and WooCommerce stores many formats.
     phone: z
       .string()
       .min(7, m.phoneInvalid)
-      .max(25)
-      .regex(/^[\d\s\+\-\(\)]+$/, m.phoneInvalid),
+      .max(25, m.phoneInvalid)
+      .regex(/^[+\d][\d\s\+\-\(\)\.#\/]+$/, m.phoneInvalid),
     country: z.string().min(1, m.countryRequired),
     city: z.string().min(1, m.cityRequired).max(100),
     state: z.string().max(100).optional().or(z.literal('')),
