@@ -3,6 +3,7 @@
 import { createWooCommerceOrder, parseWooError } from '@/lib/orders';
 import { ServerCheckoutSchema } from '@/lib/validations/checkout';
 import { WooCommerceConfigError } from '@/lib/woocommerce';
+import { getCurrentUser } from '@/lib/auth';
 
 export type CreateOrderResult =
   | { success: true; order_id: number; order_number: string; payment_url: string | null }
@@ -14,6 +15,10 @@ export type CreateOrderResult =
  * Called directly from CheckoutForm (client component).
  * No API route needed — bypasses the /api proxy routing conflict.
  * Prices are NEVER accepted from the client; WooCommerce calculates totals.
+ *
+ * If the customer is logged in (HTTP-only hwauth cookie present), their
+ * customer_id is read server-side and attached to the order. The client
+ * never sends or sees the customer ID.
  */
 export async function createOrderAction(rawInput: unknown): Promise<CreateOrderResult> {
   // Validate with strict server-side schema
@@ -34,6 +39,16 @@ export async function createOrderAction(rawInput: unknown): Promise<CreateOrderR
           ? 'Check Payments'
           : paymentMethod;
 
+  // Read customer_id server-side from HTTP-only cookie — never from client input.
+  // Silently ignored if user is not logged in (guest checkout unaffected).
+  let customerId: number | undefined;
+  try {
+    const user = await getCurrentUser();
+    if (user?.id) customerId = user.id;
+  } catch {
+    // Auth failure should never block checkout
+  }
+
   try {
     const result = await createWooCommerceOrder({
       billing,
@@ -49,6 +64,7 @@ export async function createOrderAction(rawInput: unknown): Promise<CreateOrderR
       customer_note: customerNote?.trim() ?? '',
       payment_method: paymentMethod,
       payment_method_title: paymentMethodTitle,
+      customer_id: customerId,
     });
 
     return {
@@ -58,8 +74,6 @@ export async function createOrderAction(rawInput: unknown): Promise<CreateOrderR
       payment_url: result.payment_url,
     };
   } catch (error) {
-    console.error('[createOrderAction]', error);
-
     if (error instanceof WooCommerceConfigError) {
       return { success: false, error: 'Store is not configured. Please contact support.' };
     }

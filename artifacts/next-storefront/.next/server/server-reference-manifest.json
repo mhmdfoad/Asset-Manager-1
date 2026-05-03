@@ -114,6 +114,19 @@
       },
       "filename": "app/actions/auth.ts",
       "exportedName": "loginAction"
+    },
+    "40c91f34762e6370fc7c2a3aa7186ee9d28d4d2658": {
+      "workers": {
+        "app/[locale]/checkout/page": {
+          "moduleId": "(action-browser)/../../node_modules/.pnpm/next@15.5.15_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fhome%2Frunner%2Fworkspace%2Fartifacts%2Fnext-storefront%2Fsrc%2Fapp%2Factions%2Fcheckout.ts%22%2C%5B%7B%22id%22%3A%2240c91f34762e6370fc7c2a3aa7186ee9d28d4d2658%22%2C%22exportedName%22%3A%22createOrderAction%22%2C%22filename%22%3A%22app%2Factions%2Fcheckout.ts%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/[locale]/checkout/page": "action-browser"
+      },
+      "filename": "app/actions/checkout.ts",
+      "exportedName": "createOrderAction"
     }
   },
   "edge": {},

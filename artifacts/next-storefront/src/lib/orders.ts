@@ -29,6 +29,8 @@ export interface CreateOrderInput {
   customer_note?: string;
   payment_method?: string;
   payment_method_title?: string;
+  /** WordPress/WooCommerce customer ID — attaches the order to the customer's account. */
+  customer_id?: number;
 }
 
 export interface WooOrderLineItem {
@@ -146,6 +148,7 @@ export async function createWooCommerceOrder(
     payment_method_title: input.payment_method_title ?? 'Cash on Delivery',
     set_paid: false,
     status: 'pending',
+    ...(input.customer_id && input.customer_id > 0 ? { customer_id: input.customer_id } : {}),
     billing: sanitizeAddress(input.billing),
     shipping: sanitizeAddress(input.shipping),
     line_items: input.line_items.map((item) => ({

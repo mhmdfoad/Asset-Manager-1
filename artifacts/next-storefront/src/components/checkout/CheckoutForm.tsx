@@ -12,6 +12,8 @@ import {
   FileText,
   CreditCard,
   CheckCircle,
+  Info,
+  X,
 } from 'lucide-react';
 import { useCartStore } from '@/store/cart-store';
 import { createCheckoutSchema, type CheckoutFormData } from '@/lib/validations/checkout';
@@ -20,8 +22,32 @@ import AddressFields from './AddressFields';
 import OrderSummary from './OrderSummary';
 import { cn } from '@/lib/utils';
 
-interface CheckoutFormProps {
-  locale: string;
+/* ------------------------------------------------------------------ */
+/* Prefill data type (server → client prop, JSON-serialisable)         */
+/* ------------------------------------------------------------------ */
+export interface CheckoutPrefillData {
+  billing: {
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone: string;
+    country: string;
+    state: string;
+    city: string;
+    address_1: string;
+    address_2: string;
+    postcode: string;
+  };
+  shipping: {
+    first_name: string;
+    last_name: string;
+    country: string;
+    state: string;
+    city: string;
+    address_1: string;
+    address_2: string;
+    postcode: string;
+  };
 }
 
 /* ------------------------------------------------------------------ */
@@ -52,7 +78,13 @@ function Section({
 /* ------------------------------------------------------------------ */
 /* CheckoutForm                                                         */
 /* ------------------------------------------------------------------ */
-export default function CheckoutForm({ locale }: CheckoutFormProps) {
+interface CheckoutFormProps {
+  locale: string;
+  /** Prefilled from saved account data (server-side, HTTP-only cookie). Null for guests. */
+  prefillData?: CheckoutPrefillData | null;
+}
+
+export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps) {
   const isAr = locale === 'ar';
   const router = useRouter();
 
@@ -70,6 +102,9 @@ export default function CheckoutForm({ locale }: CheckoutFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [couponOpen, setCouponOpen] = useState(false);
+  const [prefillNoticeDismissed, setPrefillNoticeDismissed] = useState(false);
+
+  const hasPrefill = Boolean(prefillData && (prefillData.billing.first_name || prefillData.billing.email));
 
   const schema = useMemo(() => createCheckoutSchema(isAr), [isAr]);
 
@@ -85,6 +120,35 @@ export default function CheckoutForm({ locale }: CheckoutFormProps) {
       paymentMethod: 'cod',
       couponCode: '',
       customerNote: '',
+      // Spread prefill data if available — guest checkout keeps empty defaults
+      ...(prefillData
+        ? {
+            billing: {
+              first_name: prefillData.billing.first_name,
+              last_name: prefillData.billing.last_name,
+              email: prefillData.billing.email,
+              phone: prefillData.billing.phone,
+              country: prefillData.billing.country,
+              state: prefillData.billing.state,
+              city: prefillData.billing.city,
+              address_1: prefillData.billing.address_1,
+              address_2: prefillData.billing.address_2,
+              postcode: prefillData.billing.postcode,
+              company: '',
+            },
+            shipping: {
+              first_name: prefillData.shipping.first_name,
+              last_name: prefillData.shipping.last_name,
+              country: prefillData.shipping.country,
+              state: prefillData.shipping.state,
+              city: prefillData.shipping.city,
+              address_1: prefillData.shipping.address_1,
+              address_2: prefillData.shipping.address_2,
+              postcode: prefillData.shipping.postcode,
+              company: '',
+            },
+          }
+        : {}),
     },
   });
 
@@ -120,7 +184,8 @@ export default function CheckoutForm({ locale }: CheckoutFormProps) {
           }
         : data.shipping;
 
-      // Server Action — runs server-side, no fetch/API route needed
+      // Server Action — runs server-side, no fetch/API route needed.
+      // customer_id is read server-side from the HTTP-only cookie — not sent by client.
       const result = await createOrderAction({
         cartItems,
         billing: data.billing,
@@ -172,6 +237,7 @@ export default function CheckoutForm({ locale }: CheckoutFormProps) {
         placingOrder: 'جاري إنشاء الطلب...',
         emptyCart: 'سلتك فارغة — أضف منتجات للمتابعة',
         shippingNote: 'الشحن يُحسب من قِبَل المتجر بناءً على عنوانك.',
+        prefillNotice: 'تم تعبئة بياناتك المحفوظة تلقائياً، ويمكنك تعديلها قبل إتمام الطلب.',
       }
     : {
         billing: 'Billing Address',
@@ -190,6 +256,8 @@ export default function CheckoutForm({ locale }: CheckoutFormProps) {
         placingOrder: 'Creating Order...',
         emptyCart: 'Your cart is empty — add items to continue',
         shippingNote: 'Shipping is calculated by the store based on your address.',
+        prefillNotice:
+          'Your saved details were filled automatically. You can edit them before placing the order.',
       };
 
   /* ---------------------------------------------------------------- */
@@ -201,6 +269,24 @@ export default function CheckoutForm({ locale }: CheckoutFormProps) {
 
         {/* ── Left column: form ─────────────────────────────────── */}
         <div className="flex flex-col gap-5 lg:col-span-2">
+
+          {/* Prefill notice — only shown for logged-in customers with saved data */}
+          {hasPrefill && !prefillNoticeDismissed && (
+            <div className="flex items-start justify-between gap-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3.5 text-sm text-blue-700">
+              <div className="flex items-start gap-2.5">
+                <Info className="mt-0.5 h-4 w-4 flex-shrink-0" />
+                <span>{l.prefillNotice}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPrefillNoticeDismissed(true)}
+                className="flex-shrink-0 rounded p-0.5 hover:bg-blue-100"
+                aria-label="Dismiss"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
 
           {/* Billing */}
           <Section title={l.billing} icon={CreditCard}>

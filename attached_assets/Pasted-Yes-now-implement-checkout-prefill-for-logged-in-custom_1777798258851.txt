@@ -1,0 +1,71 @@
+Yes, now implement checkout prefill for logged-in customers only.
+
+The custom Headless Woo Auth system is already working.
+The account pages and addresses are already implemented.
+The checkout flow is already working for guests.
+
+Goal:
+When a logged-in customer opens the checkout page, automatically prefill billing and shipping fields from their saved account data.
+
+Important:
+Do not break guest checkout.
+Do not force login before checkout.
+Guest checkout must continue working exactly as before.
+If the user is not logged in, checkout should remain empty and usable.
+
+Required behavior:
+1. On checkout page load, check if the customer is logged in.
+2. If logged in, fetch customer profile and addresses using the existing auth helpers.
+3. Prefill checkout form fields:
+   - first name
+   - last name
+   - email
+   - phone
+   - billing country
+   - billing city
+   - billing state
+   - billing address 1
+   - billing address 2
+   - billing postcode
+   - shipping first name
+   - shipping last name
+   - shipping country
+   - shipping city
+   - shipping state
+   - shipping address 1
+   - shipping address 2
+   - shipping postcode
+4. Allow the customer to edit the prefilled values before placing the order.
+5. If the saved address is incomplete, prefill only available fields.
+6. If fetching account data fails, do not block checkout.
+7. Show a small notice:
+   - Arabic: تم تعبئة بياناتك المحفوظة تلقائيا، ويمكنك تعديلها قبل إتمام الطلب.
+   - English: Your saved details were filled automatically. You can edit them before placing the order.
+
+Order creation:
+- If the user is logged in, attach customer_id to the WooCommerce order if available.
+- If the user is guest, keep the existing guest order flow.
+- Never trust prices from the client.
+- Do not change the payment redirect flow.
+
+Security:
+- Read auth token only from HTTP-only cookie server-side.
+- Do not expose token to client JavaScript.
+- Do not expose private data unnecessarily.
+- Do not break order verification.
+- Do not expose WooCommerce API keys.
+
+Code quality:
+- Reuse existing auth helpers.
+- Reuse existing address/profile types if available.
+- Keep checkout form validation working.
+- Keep Arabic RTL and English LTR working.
+- Keep mobile layout polished.
+- Do not rebuild the checkout UI from scratch.
+
+Expected output:
+1. Prefill checkout for logged-in customers.
+2. Keep guest checkout working.
+3. Attach customer_id to WooCommerce order for logged-in customers.
+4. Add Arabic/English translations for the saved-details notice.
+5. Explain how to test logged-in checkout and guest checkout.
