@@ -276,10 +276,10 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
         return;
       }
 
-      if (result.payment_url) {
+      if (data.paymentMethod !== 'cod' && result.payment_url) {
         window.location.href = result.payment_url;
       } else {
-        router.push(`/${locale}/order/pending?order_id=${result.order_id}`);
+        router.push(`/${locale}/order/received?order_id=${result.order_id}`);
       }
     } catch {
       setServerError(
