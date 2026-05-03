@@ -31,10 +31,26 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
   - Image domain configured dynamically from `WOOCOMMERCE_STORE_URL` in `next.config.ts`
 - **Caching**: products 60s revalidate, categories 300s revalidate
 
+### Authentication (Phase 7) — Custom Headless WooCommerce Auth
+- **WordPress plugin**: `wordpress-plugins/headless-woo-auth/` — install in `/wp-content/plugins/`
+  - REST namespace: `headless-auth/v1`
+  - Token format: `base64url(json_payload).hmac_sha256(payload, SECRET)` — no third-party JWT plugin
+  - Rate limiting via WordPress transients (login: 10/15min, register: 5/hr per IP)
+  - Configure in `wp-config.php`:
+    - `define('HEADLESS_AUTH_SECRET', 'your-32+-char-secret');`
+    - `define('HEADLESS_AUTH_ORIGIN', 'https://your-nextjs-domain.replit.app');`
+- **Auth lib**: `src/lib/auth.ts` (server-only) — `getAuthToken()`, `getCurrentUser()`, `wpAuthGet()`, `wpAuthPost()`
+- **Server Actions**: `src/app/actions/auth.ts` — `loginAction`, `registerAction`, `logoutAction`, `updateProfileAction`, `updateAddressAction`
+- **Cookie**: HTTP-only `hwauth` cookie, 7-day expiry, never exposed to browser/localStorage
+- **Account guard**: `src/app/[locale]/account/layout.tsx` — redirects to `/login` if not authenticated
+
 ### Key source files
 - `src/lib/woocommerce.ts` — WooCommerce API client (server-only)
+- `src/lib/auth.ts` — Headless auth helpers (server-only, reads hwauth cookie)
 - `src/lib/products.ts` — data fetching functions (getProducts, getFeaturedProducts, etc.)
 - `src/types/woocommerce.ts` — TypeScript types for products/categories
+- `src/app/actions/auth.ts` — Server Actions for login/register/logout/profile/address
+- `src/components/auth/` — LoginForm, RegisterForm, LogoutButton, AccountNav, ProfileForm, AddressForm
 - `src/components/product/ProductCard.tsx` — reusable product card
 - `src/components/product/ProductGrid.tsx` — product grid with empty state
 - `src/components/product/ProductImageGallery.tsx` — client-side image gallery
@@ -51,7 +67,22 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 - `/shop` — Shop (grid, search, sort, pagination)
 - `/product/[slug]` — Product detail (gallery, price, stock, attributes, related)
 - `/category/[slug]` — Category (products filtered by category)
-- `/cart`, `/checkout`, `/account`, `/wishlist`, `/about`, `/contact`, `/blog` — placeholders
+- `/login`, `/register` — Auth pages (ar + en, redirect if already logged in)
+- `/account` — Dashboard (welcome, quick links, recent orders) — auth-guarded
+- `/account/orders` — Order list with status badges — auth-guarded
+- `/account/orders/[id]` — Order detail with ownership check — auth-guarded
+- `/account/addresses` — Billing + shipping address forms — auth-guarded
+- `/account/profile` — Profile update form — auth-guarded
+- `/order/verify` — Universal post-payment verification page (Phase 6)
+- `/cart`, `/checkout`, `/wishlist`, `/about`, `/contact`, `/blog` — various states
+
+### CRITICAL routing rule
+`/api/*` routes in this project go to the Express API Server artifact, NOT Next.js.
+Never create Next.js Route Handlers under `/api/`. Use Server Actions for all mutations.
+
+## WordPress Plugins
+- `wordpress-plugins/headless-woo-return-redirect.php` — Phase 6: post-payment redirect handler
+- `wordpress-plugins/headless-woo-auth/` — Phase 7: custom headless auth plugin
 
 ## Key Commands
 

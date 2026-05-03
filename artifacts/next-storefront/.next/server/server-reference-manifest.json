@@ -1,5 +1,121 @@
 {
-  "node": {},
+  "node": {
+    "000c0c994d417a0a4488ff342cfb1ca36810b1ca58": {
+      "workers": {
+        "app/[locale]/login/page": {
+          "moduleId": "(action-browser)/../../node_modules/.pnpm/next@15.5.15_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fhome%2Frunner%2Fworkspace%2Fartifacts%2Fnext-storefront%2Fsrc%2Fapp%2Factions%2Fauth.ts%22%2C%5B%7B%22id%22%3A%22000c0c994d417a0a4488ff342cfb1ca36810b1ca58%22%2C%22exportedName%22%3A%22logoutAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%226000eee16eb8d7db470d6702abb4223d4010466a1a%22%2C%22exportedName%22%3A%22registerAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%22604479837987c4a53cef9625419e3d49f58c7a472f%22%2C%22exportedName%22%3A%22updateAddressAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%2260830c03309f8d00b139010e8d715306cc628e485b%22%2C%22exportedName%22%3A%22updateProfileAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%2260d7d36218fdc4cfa5fa68de87f715f0c46d4a0ac0%22%2C%22exportedName%22%3A%22loginAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        },
+        "app/[locale]/register/page": {
+          "moduleId": "(action-browser)/../../node_modules/.pnpm/next@15.5.15_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fhome%2Frunner%2Fworkspace%2Fartifacts%2Fnext-storefront%2Fsrc%2Fapp%2Factions%2Fauth.ts%22%2C%5B%7B%22id%22%3A%22000c0c994d417a0a4488ff342cfb1ca36810b1ca58%22%2C%22exportedName%22%3A%22logoutAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%226000eee16eb8d7db470d6702abb4223d4010466a1a%22%2C%22exportedName%22%3A%22registerAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%22604479837987c4a53cef9625419e3d49f58c7a472f%22%2C%22exportedName%22%3A%22updateAddressAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%2260830c03309f8d00b139010e8d715306cc628e485b%22%2C%22exportedName%22%3A%22updateProfileAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%2260d7d36218fdc4cfa5fa68de87f715f0c46d4a0ac0%22%2C%22exportedName%22%3A%22loginAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        },
+        "app/[locale]/account/page": {
+          "moduleId": "(action-browser)/../../node_modules/.pnpm/next@15.5.15_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fhome%2Frunner%2Fworkspace%2Fartifacts%2Fnext-storefront%2Fsrc%2Fapp%2Factions%2Fauth.ts%22%2C%5B%7B%22id%22%3A%22000c0c994d417a0a4488ff342cfb1ca36810b1ca58%22%2C%22exportedName%22%3A%22logoutAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%226000eee16eb8d7db470d6702abb4223d4010466a1a%22%2C%22exportedName%22%3A%22registerAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%22604479837987c4a53cef9625419e3d49f58c7a472f%22%2C%22exportedName%22%3A%22updateAddressAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%2260830c03309f8d00b139010e8d715306cc628e485b%22%2C%22exportedName%22%3A%22updateProfileAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%2260d7d36218fdc4cfa5fa68de87f715f0c46d4a0ac0%22%2C%22exportedName%22%3A%22loginAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/[locale]/login/page": "action-browser",
+        "app/[locale]/register/page": "action-browser",
+        "app/[locale]/account/page": "action-browser"
+      },
+      "filename": "app/actions/auth.ts",
+      "exportedName": "logoutAction"
+    },
+    "6000eee16eb8d7db470d6702abb4223d4010466a1a": {
+      "workers": {
+        "app/[locale]/login/page": {
+          "moduleId": "(action-browser)/../../node_modules/.pnpm/next@15.5.15_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fhome%2Frunner%2Fworkspace%2Fartifacts%2Fnext-storefront%2Fsrc%2Fapp%2Factions%2Fauth.ts%22%2C%5B%7B%22id%22%3A%22000c0c994d417a0a4488ff342cfb1ca36810b1ca58%22%2C%22exportedName%22%3A%22logoutAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%226000eee16eb8d7db470d6702abb4223d4010466a1a%22%2C%22exportedName%22%3A%22registerAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%22604479837987c4a53cef9625419e3d49f58c7a472f%22%2C%22exportedName%22%3A%22updateAddressAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%2260830c03309f8d00b139010e8d715306cc628e485b%22%2C%22exportedName%22%3A%22updateProfileAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%2260d7d36218fdc4cfa5fa68de87f715f0c46d4a0ac0%22%2C%22exportedName%22%3A%22loginAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        },
+        "app/[locale]/register/page": {
+          "moduleId": "(action-browser)/../../node_modules/.pnpm/next@15.5.15_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fhome%2Frunner%2Fworkspace%2Fartifacts%2Fnext-storefront%2Fsrc%2Fapp%2Factions%2Fauth.ts%22%2C%5B%7B%22id%22%3A%22000c0c994d417a0a4488ff342cfb1ca36810b1ca58%22%2C%22exportedName%22%3A%22logoutAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%226000eee16eb8d7db470d6702abb4223d4010466a1a%22%2C%22exportedName%22%3A%22registerAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%22604479837987c4a53cef9625419e3d49f58c7a472f%22%2C%22exportedName%22%3A%22updateAddressAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%2260830c03309f8d00b139010e8d715306cc628e485b%22%2C%22exportedName%22%3A%22updateProfileAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%2260d7d36218fdc4cfa5fa68de87f715f0c46d4a0ac0%22%2C%22exportedName%22%3A%22loginAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        },
+        "app/[locale]/account/page": {
+          "moduleId": "(action-browser)/../../node_modules/.pnpm/next@15.5.15_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fhome%2Frunner%2Fworkspace%2Fartifacts%2Fnext-storefront%2Fsrc%2Fapp%2Factions%2Fauth.ts%22%2C%5B%7B%22id%22%3A%22000c0c994d417a0a4488ff342cfb1ca36810b1ca58%22%2C%22exportedName%22%3A%22logoutAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%226000eee16eb8d7db470d6702abb4223d4010466a1a%22%2C%22exportedName%22%3A%22registerAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%22604479837987c4a53cef9625419e3d49f58c7a472f%22%2C%22exportedName%22%3A%22updateAddressAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%2260830c03309f8d00b139010e8d715306cc628e485b%22%2C%22exportedName%22%3A%22updateProfileAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%2260d7d36218fdc4cfa5fa68de87f715f0c46d4a0ac0%22%2C%22exportedName%22%3A%22loginAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/[locale]/login/page": "action-browser",
+        "app/[locale]/register/page": "action-browser",
+        "app/[locale]/account/page": "action-browser"
+      },
+      "filename": "app/actions/auth.ts",
+      "exportedName": "registerAction"
+    },
+    "604479837987c4a53cef9625419e3d49f58c7a472f": {
+      "workers": {
+        "app/[locale]/login/page": {
+          "moduleId": "(action-browser)/../../node_modules/.pnpm/next@15.5.15_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fhome%2Frunner%2Fworkspace%2Fartifacts%2Fnext-storefront%2Fsrc%2Fapp%2Factions%2Fauth.ts%22%2C%5B%7B%22id%22%3A%22000c0c994d417a0a4488ff342cfb1ca36810b1ca58%22%2C%22exportedName%22%3A%22logoutAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%226000eee16eb8d7db470d6702abb4223d4010466a1a%22%2C%22exportedName%22%3A%22registerAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%22604479837987c4a53cef9625419e3d49f58c7a472f%22%2C%22exportedName%22%3A%22updateAddressAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%2260830c03309f8d00b139010e8d715306cc628e485b%22%2C%22exportedName%22%3A%22updateProfileAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%2260d7d36218fdc4cfa5fa68de87f715f0c46d4a0ac0%22%2C%22exportedName%22%3A%22loginAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        },
+        "app/[locale]/register/page": {
+          "moduleId": "(action-browser)/../../node_modules/.pnpm/next@15.5.15_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fhome%2Frunner%2Fworkspace%2Fartifacts%2Fnext-storefront%2Fsrc%2Fapp%2Factions%2Fauth.ts%22%2C%5B%7B%22id%22%3A%22000c0c994d417a0a4488ff342cfb1ca36810b1ca58%22%2C%22exportedName%22%3A%22logoutAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%226000eee16eb8d7db470d6702abb4223d4010466a1a%22%2C%22exportedName%22%3A%22registerAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%22604479837987c4a53cef9625419e3d49f58c7a472f%22%2C%22exportedName%22%3A%22updateAddressAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%2260830c03309f8d00b139010e8d715306cc628e485b%22%2C%22exportedName%22%3A%22updateProfileAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%2260d7d36218fdc4cfa5fa68de87f715f0c46d4a0ac0%22%2C%22exportedName%22%3A%22loginAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        },
+        "app/[locale]/account/page": {
+          "moduleId": "(action-browser)/../../node_modules/.pnpm/next@15.5.15_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fhome%2Frunner%2Fworkspace%2Fartifacts%2Fnext-storefront%2Fsrc%2Fapp%2Factions%2Fauth.ts%22%2C%5B%7B%22id%22%3A%22000c0c994d417a0a4488ff342cfb1ca36810b1ca58%22%2C%22exportedName%22%3A%22logoutAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%226000eee16eb8d7db470d6702abb4223d4010466a1a%22%2C%22exportedName%22%3A%22registerAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%22604479837987c4a53cef9625419e3d49f58c7a472f%22%2C%22exportedName%22%3A%22updateAddressAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%2260830c03309f8d00b139010e8d715306cc628e485b%22%2C%22exportedName%22%3A%22updateProfileAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%2260d7d36218fdc4cfa5fa68de87f715f0c46d4a0ac0%22%2C%22exportedName%22%3A%22loginAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/[locale]/login/page": "action-browser",
+        "app/[locale]/register/page": "action-browser",
+        "app/[locale]/account/page": "action-browser"
+      },
+      "filename": "app/actions/auth.ts",
+      "exportedName": "updateAddressAction"
+    },
+    "60830c03309f8d00b139010e8d715306cc628e485b": {
+      "workers": {
+        "app/[locale]/login/page": {
+          "moduleId": "(action-browser)/../../node_modules/.pnpm/next@15.5.15_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fhome%2Frunner%2Fworkspace%2Fartifacts%2Fnext-storefront%2Fsrc%2Fapp%2Factions%2Fauth.ts%22%2C%5B%7B%22id%22%3A%22000c0c994d417a0a4488ff342cfb1ca36810b1ca58%22%2C%22exportedName%22%3A%22logoutAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%226000eee16eb8d7db470d6702abb4223d4010466a1a%22%2C%22exportedName%22%3A%22registerAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%22604479837987c4a53cef9625419e3d49f58c7a472f%22%2C%22exportedName%22%3A%22updateAddressAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%2260830c03309f8d00b139010e8d715306cc628e485b%22%2C%22exportedName%22%3A%22updateProfileAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%2260d7d36218fdc4cfa5fa68de87f715f0c46d4a0ac0%22%2C%22exportedName%22%3A%22loginAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        },
+        "app/[locale]/register/page": {
+          "moduleId": "(action-browser)/../../node_modules/.pnpm/next@15.5.15_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fhome%2Frunner%2Fworkspace%2Fartifacts%2Fnext-storefront%2Fsrc%2Fapp%2Factions%2Fauth.ts%22%2C%5B%7B%22id%22%3A%22000c0c994d417a0a4488ff342cfb1ca36810b1ca58%22%2C%22exportedName%22%3A%22logoutAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%226000eee16eb8d7db470d6702abb4223d4010466a1a%22%2C%22exportedName%22%3A%22registerAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%22604479837987c4a53cef9625419e3d49f58c7a472f%22%2C%22exportedName%22%3A%22updateAddressAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%2260830c03309f8d00b139010e8d715306cc628e485b%22%2C%22exportedName%22%3A%22updateProfileAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%2260d7d36218fdc4cfa5fa68de87f715f0c46d4a0ac0%22%2C%22exportedName%22%3A%22loginAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        },
+        "app/[locale]/account/page": {
+          "moduleId": "(action-browser)/../../node_modules/.pnpm/next@15.5.15_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fhome%2Frunner%2Fworkspace%2Fartifacts%2Fnext-storefront%2Fsrc%2Fapp%2Factions%2Fauth.ts%22%2C%5B%7B%22id%22%3A%22000c0c994d417a0a4488ff342cfb1ca36810b1ca58%22%2C%22exportedName%22%3A%22logoutAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%226000eee16eb8d7db470d6702abb4223d4010466a1a%22%2C%22exportedName%22%3A%22registerAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%22604479837987c4a53cef9625419e3d49f58c7a472f%22%2C%22exportedName%22%3A%22updateAddressAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%2260830c03309f8d00b139010e8d715306cc628e485b%22%2C%22exportedName%22%3A%22updateProfileAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%2260d7d36218fdc4cfa5fa68de87f715f0c46d4a0ac0%22%2C%22exportedName%22%3A%22loginAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/[locale]/login/page": "action-browser",
+        "app/[locale]/register/page": "action-browser",
+        "app/[locale]/account/page": "action-browser"
+      },
+      "filename": "app/actions/auth.ts",
+      "exportedName": "updateProfileAction"
+    },
+    "60d7d36218fdc4cfa5fa68de87f715f0c46d4a0ac0": {
+      "workers": {
+        "app/[locale]/login/page": {
+          "moduleId": "(action-browser)/../../node_modules/.pnpm/next@15.5.15_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fhome%2Frunner%2Fworkspace%2Fartifacts%2Fnext-storefront%2Fsrc%2Fapp%2Factions%2Fauth.ts%22%2C%5B%7B%22id%22%3A%22000c0c994d417a0a4488ff342cfb1ca36810b1ca58%22%2C%22exportedName%22%3A%22logoutAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%226000eee16eb8d7db470d6702abb4223d4010466a1a%22%2C%22exportedName%22%3A%22registerAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%22604479837987c4a53cef9625419e3d49f58c7a472f%22%2C%22exportedName%22%3A%22updateAddressAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%2260830c03309f8d00b139010e8d715306cc628e485b%22%2C%22exportedName%22%3A%22updateProfileAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%2260d7d36218fdc4cfa5fa68de87f715f0c46d4a0ac0%22%2C%22exportedName%22%3A%22loginAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        },
+        "app/[locale]/register/page": {
+          "moduleId": "(action-browser)/../../node_modules/.pnpm/next@15.5.15_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fhome%2Frunner%2Fworkspace%2Fartifacts%2Fnext-storefront%2Fsrc%2Fapp%2Factions%2Fauth.ts%22%2C%5B%7B%22id%22%3A%22000c0c994d417a0a4488ff342cfb1ca36810b1ca58%22%2C%22exportedName%22%3A%22logoutAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%226000eee16eb8d7db470d6702abb4223d4010466a1a%22%2C%22exportedName%22%3A%22registerAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%22604479837987c4a53cef9625419e3d49f58c7a472f%22%2C%22exportedName%22%3A%22updateAddressAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%2260830c03309f8d00b139010e8d715306cc628e485b%22%2C%22exportedName%22%3A%22updateProfileAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%2260d7d36218fdc4cfa5fa68de87f715f0c46d4a0ac0%22%2C%22exportedName%22%3A%22loginAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        },
+        "app/[locale]/account/page": {
+          "moduleId": "(action-browser)/../../node_modules/.pnpm/next@15.5.15_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fhome%2Frunner%2Fworkspace%2Fartifacts%2Fnext-storefront%2Fsrc%2Fapp%2Factions%2Fauth.ts%22%2C%5B%7B%22id%22%3A%22000c0c994d417a0a4488ff342cfb1ca36810b1ca58%22%2C%22exportedName%22%3A%22logoutAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%226000eee16eb8d7db470d6702abb4223d4010466a1a%22%2C%22exportedName%22%3A%22registerAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%22604479837987c4a53cef9625419e3d49f58c7a472f%22%2C%22exportedName%22%3A%22updateAddressAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%2260830c03309f8d00b139010e8d715306cc628e485b%22%2C%22exportedName%22%3A%22updateProfileAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%2C%7B%22id%22%3A%2260d7d36218fdc4cfa5fa68de87f715f0c46d4a0ac0%22%2C%22exportedName%22%3A%22loginAction%22%2C%22filename%22%3A%22app%2Factions%2Fauth.ts%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/[locale]/login/page": "action-browser",
+        "app/[locale]/register/page": "action-browser",
+        "app/[locale]/account/page": "action-browser"
+      },
+      "filename": "app/actions/auth.ts",
+      "exportedName": "loginAction"
+    }
+  },
   "edge": {},
   "encryptionKey": "9ltQk3/1ayHY6ueqk3kQeVkW2RnukyTmsfspvOYuvJI="
 }

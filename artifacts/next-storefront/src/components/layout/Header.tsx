@@ -1,17 +1,18 @@
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
-import { Search, Heart, User } from 'lucide-react';
+import { Search, Heart, User, LogIn } from 'lucide-react';
 import Navigation from './Navigation';
 import LanguageSwitcher from './LanguageSwitcher';
 import MobileMenu from './MobileMenu';
 import CartHeaderButton from './CartHeaderButton';
+import { getCurrentUser } from '@/lib/auth';
 
 interface HeaderProps {
   locale: string;
 }
 
 export default async function Header({ locale }: HeaderProps) {
-  const t = await getTranslations('Nav');
+  const [t, user] = await Promise.all([getTranslations('Nav'), getCurrentUser()]);
 
   return (
     <header className="sticky top-0 z-30 border-b border-neutral-200 bg-white/95 backdrop-blur-md">
@@ -51,13 +52,27 @@ export default async function Header({ locale }: HeaderProps) {
             <Heart className="h-[18px] w-[18px]" />
           </Link>
 
-          <Link
-            href="/account"
-            aria-label={t('account')}
-            className="hidden h-9 w-9 items-center justify-center rounded-lg text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-accent-600 sm:flex"
-          >
-            <User className="h-[18px] w-[18px]" />
-          </Link>
+          {/* Auth-aware account button */}
+          {user ? (
+            <Link
+              href="/account"
+              aria-label={t('account')}
+              className="relative hidden h-9 w-9 items-center justify-center rounded-lg text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-accent-600 sm:flex"
+              title={`${user.first_name} ${user.last_name}`}
+            >
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-accent-100 text-[10px] font-bold text-accent-700">
+                {(user.first_name?.[0] ?? user.email[0]).toUpperCase()}
+              </div>
+            </Link>
+          ) : (
+            <Link
+              href="/login"
+              aria-label={t('account')}
+              className="hidden h-9 w-9 items-center justify-center rounded-lg text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-accent-600 sm:flex"
+            >
+              <User className="h-[18px] w-[18px]" />
+            </Link>
+          )}
 
           {/* Cart — client component with live count + drawer trigger */}
           <CartHeaderButton ariaLabel={t('cart')} />

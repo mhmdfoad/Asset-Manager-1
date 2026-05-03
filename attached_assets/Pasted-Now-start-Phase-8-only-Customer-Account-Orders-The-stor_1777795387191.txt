@@ -1,0 +1,394 @@
+Now start Phase 8 only: Customer Account + Orders.
+
+The storefront already has:
+- Next.js foundation
+- Premium UI
+- WooCommerce products and categories integration
+- Product details and variations
+- Cart system
+- Checkout order creation
+- WooCommerce payment redirect
+- Payment return to Next.js
+- Order verification page
+
+Do not rebuild the whole project.
+Do not change the overall design direction.
+Do not implement the custom WordPress Storefront Controller plugin yet.
+Do not rebuild checkout unless a small adjustment is required.
+Do not expose WooCommerce API keys to the browser.
+
+Goal:
+Build a secure customer account system in the Next.js storefront connected to WordPress/WooCommerce.
+
+The customer should be able to:
+- Register
+- Login
+- Logout
+- View account dashboard
+- View order history
+- View order details
+- View and update billing/shipping addresses
+- View and update basic profile information
+
+Important:
+WordPress/WooCommerce remains the source of truth for customers and orders.
+
+Authentication Strategy:
+Use secure server-side authentication.
+
+Preferred approach:
+- Customer logs in from Next.js.
+- Next.js API route sends credentials to WordPress JWT endpoint.
+- WordPress returns JWT token.
+- Next.js stores the JWT in an HTTP-only secure cookie.
+- The browser must not store JWT in localStorage.
+- Authenticated server-side routes use this token to fetch WooCommerce customer data.
+
+Required WordPress dependency:
+Use JWT Authentication for WP REST API or an equivalent secure JWT plugin.
+
+Required Environment Variables:
+WORDPRESS_URL=
+WOOCOMMERCE_STORE_URL=
+WOOCOMMERCE_CONSUMER_KEY=
+WOOCOMMERCE_CONSUMER_SECRET=
+JWT_AUTH_SECRET_KEY if needed
+
+Required Work:
+
+1. Auth API Routes
+
+Create these Next.js API routes:
+
+app/api/auth/login/route.ts
+app/api/auth/register/route.ts
+app/api/auth/logout/route.ts
+app/api/auth/me/route.ts
+
+Login route:
+- Accept email/username and password.
+- Validate input with Zod.
+- Call WordPress JWT token endpoint server-side.
+- Store JWT token in HTTP-only cookie.
+- Return safe user data only.
+- Handle invalid credentials.
+
+Register route:
+- Accept first name, last name, email, password, phone optional.
+- Validate input with Zod.
+- Create WooCommerce customer using REST API server-side.
+- Optionally auto-login after registration.
+- Handle duplicate email error.
+
+Logout route:
+- Clear auth cookie.
+- Return success.
+
+Me route:
+- Read JWT from HTTP-only cookie.
+- Verify token with WordPress if needed.
+- Return safe logged-in customer data.
+
+Security:
+- Never expose JWT token to browser JavaScript.
+- Never store JWT in localStorage.
+- Use HTTP-only, secure, SameSite cookie.
+- Validate all request bodies.
+- Rate limit login/register if possible.
+
+2. Auth Helpers
+
+Create or update:
+
+lib/auth.ts
+
+Functions:
+- loginCustomer()
+- registerCustomer()
+- logoutCustomer()
+- getCurrentCustomer()
+- requireCustomerAuth()
+- getAuthTokenFromCookie()
+- setAuthCookie()
+- clearAuthCookie()
+
+3. WooCommerce Customer Functions
+
+Create or update:
+
+lib/customers.ts
+
+Functions:
+- createCustomer()
+- getCustomerById()
+- updateCustomer()
+- getCustomerOrders()
+- getCustomerOrderById()
+- getCustomerAddresses()
+- updateCustomerAddresses()
+
+Important:
+When fetching orders, ensure the logged-in user can only access their own orders.
+Do not allow a user to view another customer's order by changing the ID.
+
+4. Login Page
+
+Update /login page.
+
+Requirements:
+- Email/username field
+- Password field
+- Remember me optional
+- Submit button
+- Loading state
+- Error messages
+- Link to register
+- Link to forgot password placeholder
+- Arabic/English translations
+- Premium UI
+- RTL/LTR compatible
+- Mobile-friendly
+
+5. Register Page
+
+Update /register page.
+
+Fields:
+- First name
+- Last name
+- Email
+- Password
+- Confirm password
+- Phone optional
+- Accept terms checkbox optional
+
+Requirements:
+- Zod validation
+- Password confirmation
+- Duplicate email handling
+- Loading state
+- Error messages
+- Redirect to account page after success
+- Arabic/English translations
+- Premium UI
+
+6. Account Layout
+
+Update /account layout.
+
+Create account dashboard shell:
+- Sidebar or tabs
+- Dashboard
+- Orders
+- Addresses
+- Profile
+- Logout button
+
+Routes:
+- /account
+- /account/orders
+- /account/orders/[id]
+- /account/addresses
+- /account/profile
+
+For English:
+- /en/account
+- /en/account/orders
+- /en/account/orders/[id]
+- /en/account/addresses
+- /en/account/profile
+
+If user is not logged in:
+- Redirect to /login
+- Or show login required card.
+
+7. Account Dashboard
+
+Show:
+- Welcome message
+- Customer name
+- Recent orders summary
+- Quick links:
+  - Orders
+  - Addresses
+  - Profile
+  - Continue shopping
+
+8. Orders Page
+
+Update /account/orders.
+
+Requirements:
+- Fetch orders for the logged-in customer only.
+- Show order list:
+  - Order number
+  - Date
+  - Status
+  - Total
+  - Payment method
+  - View details button
+- Empty state if no orders.
+- Arabic/English status labels.
+- Premium card/table design.
+- Mobile-friendly.
+
+9. Order Details Page
+
+Update /account/orders/[id].
+
+Requirements:
+- Verify this order belongs to the logged-in customer.
+- Show:
+  - Order number
+  - Status
+  - Date
+  - Payment method
+  - Total
+  - Items
+  - Billing address
+  - Shipping address
+  - Customer note if available
+- Do not expose private data beyond the logged-in user.
+- Show not found / unauthorized state if needed.
+
+10. Addresses Page
+
+Update /account/addresses.
+
+Requirements:
+- Show billing address form.
+- Show shipping address form.
+- Update WooCommerce customer addresses.
+- Zod validation.
+- Loading and success states.
+- Arabic/English translations.
+- Mobile-friendly.
+
+11. Profile Page
+
+Update /account/profile.
+
+Requirements:
+- Show first name
+- Last name
+- Display name if available
+- Email readonly or editable if safe
+- Phone if stored
+- Update profile
+- Optional password change placeholder
+- Success/error messages.
+
+12. Header Auth State
+
+Update Header:
+- If not logged in:
+  - Show login/account icon linking to /login
+- If logged in:
+  - Show account icon linking to /account
+  - Optional small dropdown:
+    - Account
+    - Orders
+    - Logout
+
+13. Checkout Guest vs Logged-in
+
+Small adjustment only:
+- If customer is logged in, prefill checkout fields from WooCommerce customer profile if easy.
+- Do not overcomplicate checkout.
+- Guest checkout should continue to work.
+
+14. i18n
+
+Add Arabic and English translations for:
+- Login
+- Register
+- Logout
+- My account
+- Dashboard
+- Orders
+- Addresses
+- Profile
+- Welcome back
+- Order number
+- Order date
+- Order status
+- Total
+- Payment method
+- View details
+- No orders yet
+- Billing address
+- Shipping address
+- Save changes
+- Profile updated
+- Invalid credentials
+- Email already exists
+- Passwords do not match
+- Login required
+- Unauthorized
+
+15. Security Requirements
+
+- JWT token in HTTP-only cookie only.
+- Do not expose JWT to client JS.
+- WooCommerce API credentials server-side only.
+- Validate all forms.
+- Sanitize user input.
+- Rate limit login/register routes if possible.
+- Protect account routes.
+- Users can only view their own orders.
+- Do not return unnecessary private customer data.
+- Use HTTPS in production.
+- Handle expired token gracefully.
+
+16. Code Quality
+
+- Keep auth logic separate from UI.
+- Keep customer/order functions in lib files.
+- Use TypeScript types.
+- Avoid huge components.
+- Reuse existing UI components.
+- Keep premium design.
+- Keep RTL/LTR correct.
+- Do not break cart, checkout, product pages, or payment verification.
+
+Expected Output:
+1. Add auth API routes.
+2. Add secure cookie-based auth.
+3. Add auth helpers.
+4. Add customer/order helpers.
+5. Build login page.
+6. Build register page.
+7. Build account dashboard.
+8. Build orders list.
+9. Build order details page.
+10. Build addresses page.
+11. Build profile page.
+12. Update header auth state.
+13. Add Arabic/English translations.
+14. Explain required WordPress JWT setup.
+15. Explain how to test login, register, orders, and logout.
+16. Explain what the next phase should be.
+
+Testing Requirements:
+Test:
+- Register new customer.
+- Login with valid credentials.
+- Login with invalid credentials.
+- Logout.
+- Access /account while logged out.
+- Access /account while logged in.
+- View own orders.
+- Try to access another order ID.
+- Update billing address.
+- Update shipping address.
+- Update profile.
+- Token expired case if possible.
+- Arabic RTL.
+- English LTR.
+- Mobile layout.
+
+Final reminder:
+This is Phase 8 only.
+Implement customer account and orders.
+Do not implement the custom Storefront Controller plugin yet.
+Do not rebuild checkout or product pages.

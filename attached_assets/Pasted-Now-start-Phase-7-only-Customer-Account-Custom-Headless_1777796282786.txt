@@ -1,0 +1,372 @@
+Now start Phase 7 only: Customer Account + Custom Headless WooCommerce Authentication.
+
+Important correction:
+Customer login/register is required. Do not remove it.
+Do not cancel the customer account system.
+Do not keep the store as guest-only.
+
+Problem:
+The external JWT plugin setup is causing configuration issues, so instead of depending on a third-party JWT plugin, build a small custom WordPress plugin dedicated to headless WooCommerce authentication.
+
+Goal:
+Create a secure customer account system for the Next.js Headless WooCommerce storefront using a custom WordPress plugin and Next.js API routes.
+
+The customer should be able to:
+- Register
+- Login
+- Logout
+- View account dashboard
+- View order history
+- View order details
+- Update billing/shipping addresses
+- Update basic profile data
+
+Architecture:
+WordPress + WooCommerce remains the source of truth for users, customers, and orders.
+
+Authentication flow:
+1. Customer submits login form in Next.js.
+2. Next.js sends credentials to a custom WordPress REST endpoint.
+3. WordPress validates the user using wp_authenticate().
+4. WordPress confirms the user is a WooCommerce customer.
+5. WordPress returns a signed token or session payload to Next.js.
+6. Next.js stores the token in an HTTP-only secure cookie.
+7. Next.js uses the token server-side to call custom WordPress endpoints for me/orders/addresses/profile.
+8. The browser must never store tokens in localStorage.
+
+Important:
+Do not expose WooCommerce Consumer Key or Consumer Secret to the browser.
+Do not store auth token in localStorage.
+Use HTTP-only cookies only.
+
+Part 1: Build WordPress Plugin
+
+Plugin name:
+Headless Woo Auth
+
+Plugin slug:
+headless-woo-auth
+
+Plugin folder:
+wp-content/plugins/headless-woo-auth/
+
+Required structure:
+headless-woo-auth/
+├── headless-woo-auth.php
+├── includes/
+│   ├── class-rest-api.php
+│   ├── class-token.php
+│   ├── class-auth.php
+│   ├── class-customers.php
+│   └── class-sanitizer.php
+└── README.md
+
+Required REST endpoints:
+POST /wp-json/headless-auth/v1/login
+POST /wp-json/headless-auth/v1/register
+POST /wp-json/headless-auth/v1/logout
+GET  /wp-json/headless-auth/v1/me
+GET  /wp-json/headless-auth/v1/orders
+GET  /wp-json/headless-auth/v1/orders/{id}
+GET  /wp-json/headless-auth/v1/addresses
+POST /wp-json/headless-auth/v1/addresses
+GET  /wp-json/headless-auth/v1/profile
+POST /wp-json/headless-auth/v1/profile
+
+Token requirements:
+- Create a signed token using WordPress salts or a plugin secret.
+- Include user_id, email, issued_at, expires_at.
+- Sign token using hash_hmac with SHA256.
+- Token expiry should be configurable or default to 7 days.
+- Validate token on protected endpoints.
+- Reject expired or invalid tokens.
+- Never expose password hashes.
+- Never expose private WordPress internals.
+
+Login endpoint:
+POST /wp-json/headless-auth/v1/login
+
+Input:
+- username_or_email
+- password
+
+Behavior:
+- Validate and sanitize input.
+- Authenticate using wp_authenticate().
+- Confirm user exists and is not blocked.
+- Return safe user data:
+  - id
+  - email
+  - first_name
+  - last_name
+  - display_name
+  - roles safe if needed
+- Return signed token.
+- Do not return password hash.
+- Use proper WP_Error responses.
+
+Register endpoint:
+POST /wp-json/headless-auth/v1/register
+
+Input:
+- first_name
+- last_name
+- email
+- password
+- phone optional
+
+Behavior:
+- Validate email.
+- Validate strong enough password.
+- Reject duplicate email.
+- Create WordPress user with customer role.
+- Create/update WooCommerce customer meta.
+- Return safe user data and signed token.
+- Do not auto-create admin users.
+- Sanitize all fields.
+
+Protected endpoints:
+All protected endpoints must require Authorization: Bearer {token}
+
+Me endpoint:
+- Return safe current customer data.
+
+Orders endpoint:
+- Return orders that belong only to the authenticated customer.
+- Do not allow viewing other customers' orders.
+- Use wc_get_orders with customer_id.
+- Return safe order summaries.
+
+Order details endpoint:
+- Validate order belongs to current customer.
+- Return order summary, line items, totals, status, payment method, addresses if appropriate.
+
+Addresses endpoint:
+- Get and update WooCommerce billing/shipping user meta:
+  - billing_first_name
+  - billing_last_name
+  - billing_email
+  - billing_phone
+  - billing_country
+  - billing_city
+  - billing_state
+  - billing_address_1
+  - billing_address_2
+  - billing_postcode
+  - shipping_first_name
+  - shipping_last_name
+  - shipping_country
+  - shipping_city
+  - shipping_state
+  - shipping_address_1
+  - shipping_address_2
+  - shipping_postcode
+
+Profile endpoint:
+- Get/update first name, last name, display name, phone if used.
+- Email update can be disabled or handled carefully.
+
+Security requirements for WordPress plugin:
+- Use register_rest_route properly.
+- Sanitize all inputs.
+- Escape any admin output if admin page is added.
+- Use WP_Error with correct status codes.
+- Do not expose sensitive data.
+- Validate token signature and expiry.
+- Use timing-safe comparison when comparing signatures.
+- Rate limit login/register if possible using transients.
+- Do not allow privilege escalation.
+- Do not expose admin users unnecessarily.
+- Only customer role should be allowed for storefront login unless explicitly allowed.
+
+Part 2: Next.js Auth Integration
+
+Create Next.js API routes:
+
+app/api/auth/login/route.ts
+app/api/auth/register/route.ts
+app/api/auth/logout/route.ts
+app/api/auth/me/route.ts
+
+Next.js login route:
+- Accept username_or_email and password.
+- Validate with Zod.
+- Call WordPress /headless-auth/v1/login.
+- Receive token.
+- Store token in HTTP-only secure cookie.
+- Return safe user data only.
+
+Next.js register route:
+- Validate fields with Zod.
+- Call WordPress register endpoint.
+- Store token in HTTP-only secure cookie.
+- Return safe user data.
+
+Next.js logout route:
+- Clear HTTP-only cookie.
+- Return success.
+
+Next.js me route:
+- Read token from HTTP-only cookie.
+- Call WordPress /me endpoint server-side.
+- Return safe user data.
+
+Cookie requirements:
+- HTTP-only
+- Secure in production
+- SameSite=Lax or Strict
+- Path=/
+- Expiry aligned with token expiry
+
+Do not expose token to the browser.
+
+Part 3: Customer Pages in Next.js
+
+Build or improve these pages:
+- /login
+- /register
+- /account
+- /account/orders
+- /account/orders/[id]
+- /account/addresses
+- /account/profile
+
+English routes should also work under:
+- /en/login
+- /en/register
+- /en/account
+- /en/account/orders
+- /en/account/orders/[id]
+- /en/account/addresses
+- /en/account/profile
+
+Login page:
+- username/email
+- password
+- forgot password placeholder
+- link to register
+- loading state
+- errors
+- premium UI
+- Arabic/English translations
+
+Register page:
+- first name
+- last name
+- email
+- password
+- confirm password
+- phone optional
+- accept terms checkbox optional
+- validation
+- premium UI
+
+Account dashboard:
+- welcome message
+- quick links
+- recent orders
+- profile summary
+
+Orders page:
+- list authenticated customer orders only
+- order number
+- date
+- status
+- total
+- payment method
+- view details
+
+Order details:
+- verify ownership server-side
+- show items, totals, status, addresses, payment method
+
+Addresses:
+- billing and shipping forms
+- update using protected endpoint
+- validation and success/error states
+
+Profile:
+- first name
+- last name
+- display name
+- phone
+- save changes
+
+Part 4: Header Auth State
+
+Update header:
+- If not logged in:
+  - show login icon/link
+- If logged in:
+  - show account link/dropdown
+  - show orders link
+  - show logout action
+
+Part 5: Checkout Integration
+
+Small improvement only:
+- If user is logged in, prefill checkout billing/shipping data from account if available.
+- Guest checkout should still work.
+- Do not force login to checkout unless explicitly configured.
+
+Part 6: i18n
+
+Add Arabic and English translations for all auth/account strings:
+- Login
+- Register
+- Logout
+- My account
+- Dashboard
+- Orders
+- Addresses
+- Profile
+- Welcome back
+- Invalid credentials
+- Email already exists
+- Passwords do not match
+- Save changes
+- Profile updated
+- Address updated
+- No orders yet
+- View order
+- Login required
+- Unauthorized
+- Session expired
+
+Part 7: Testing
+
+Test:
+- Register new customer.
+- Login valid customer.
+- Login invalid credentials.
+- Logout.
+- Access account while logged out.
+- Access account while logged in.
+- View own orders.
+- Try to access another order ID.
+- Update addresses.
+- Update profile.
+- Expired token.
+- Arabic RTL.
+- English LTR.
+- Mobile layout.
+- Checkout as guest.
+- Checkout as logged-in user.
+
+Expected output:
+1. Complete custom WordPress plugin files.
+2. Instructions where to install and activate the plugin.
+3. Next.js auth API routes.
+4. Login/register/account pages.
+5. Protected account logic.
+6. Secure HTTP-only cookie auth.
+7. Order ownership protection.
+8. Arabic/English translations.
+9. Explanation of the full auth flow.
+10. Explanation why this avoids the problematic third-party JWT plugin.
+
+Final reminder:
+Customer accounts are required.
+Do not remove login/register.
+Do not depend on the broken third-party JWT plugin.
+Build a custom, secure Headless WooCommerce auth layer.
