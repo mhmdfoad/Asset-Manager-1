@@ -1,11 +1,15 @@
 import 'server-only';
 import { wcFetch, isConfigured, WooCommerceConfigError } from './woocommerce';
+import { decodeSlug } from './format';
 import type {
   WooProduct,
   WooCategory,
+  WooProductVariation,
   WooProductsParams,
   WooCategoriesParams,
 } from '@/types/woocommerce';
+
+export { decodeSlug, encodeSlugForUrl, formatPrice, stripHtml } from './format';
 
 function buildProductQuery(
   params: WooProductsParams
@@ -60,6 +64,30 @@ export async function getProductBySlug(slug: string): Promise<WooProduct | null>
     return result.data[0] ?? null;
   } catch {
     return null;
+  }
+}
+
+export async function getProductVariations(productId: number): Promise<WooProductVariation[]> {
+  if (!isConfigured()) return [];
+  try {
+    const allVariations: WooProductVariation[] = [];
+    let page = 1;
+    const perPage = 100;
+
+    while (true) {
+      const result = await wcFetch<WooProductVariation[]>(
+        `/products/${productId}/variations`,
+        { per_page: perPage, page },
+        60
+      );
+      allVariations.push(...result.data);
+      if (result.data.length < perPage || page >= result.totalPages) break;
+      page++;
+    }
+
+    return allVariations;
+  } catch {
+    return [];
   }
 }
 
@@ -127,19 +155,6 @@ export async function getCategoryBySlug(slug: string): Promise<WooCategory | nul
   }
 }
 
-export function decodeSlug(slug: string): string {
-  try {
-    return decodeURIComponent(slug);
-  } catch {
-    return slug;
-  }
-}
-
-export function encodeSlugForUrl(slug: string): string {
-  const decoded = decodeSlug(slug);
-  return encodeURIComponent(decoded);
-}
-
 export function parseSortOption(sort: string | undefined): Pick<WooProductsParams, 'orderby' | 'order'> {
   switch (sort) {
     case 'price_low':
@@ -152,17 +167,4 @@ export function parseSortOption(sort: string | undefined): Pick<WooProductsParam
     default:
       return { orderby: 'date', order: 'desc' };
   }
-}
-
-export function formatPrice(price: string, currencySymbol?: string): string {
-  if (!price) return '';
-  const symbol = currencySymbol ?? process.env.NEXT_PUBLIC_CURRENCY_SYMBOL ?? '';
-  const num = parseFloat(price);
-  if (isNaN(num)) return price;
-  const formatted = num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  return symbol ? `${symbol} ${formatted}` : formatted;
-}
-
-export function stripHtml(html: string): string {
-  return html.replace(/<[^>]*>/g, '').trim();
 }

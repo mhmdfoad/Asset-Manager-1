@@ -445,52 +445,6 @@ importers:
         specifier: ~5.9.2
         version: 5.9.3
 
-  artifacts/next-storefront-backup:
-    dependencies:
-      clsx:
-        specifier: 'catalog:'
-        version: 2.1.1
-      lucide-react:
-        specifier: 'catalog:'
-        version: 0.545.0(react@19.1.0)
-      next:
-        specifier: ^15.3.1
-        version: 15.5.15(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      next-intl:
-        specifier: ^3.26.3
-        version: 3.26.5(next@15.5.15(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)
-      react:
-        specifier: 'catalog:'
-        version: 19.1.0
-      react-dom:
-        specifier: 'catalog:'
-        version: 19.1.0(react@19.1.0)
-      tailwind-merge:
-        specifier: 'catalog:'
-        version: 3.5.0
-    devDependencies:
-      '@types/node':
-        specifier: 'catalog:'
-        version: 25.3.5
-      '@types/react':
-        specifier: 'catalog:'
-        version: 19.2.14
-      '@types/react-dom':
-        specifier: 'catalog:'
-        version: 19.2.3(@types/react@19.2.14)
-      autoprefixer:
-        specifier: ^10.4.19
-        version: 10.5.0(postcss@8.5.8)
-      postcss:
-        specifier: ^8.4.38
-        version: 8.5.8
-      tailwindcss:
-        specifier: ^3.4.17
-        version: 3.4.19(tsx@4.21.0)(yaml@2.8.2)
-      typescript:
-        specifier: ~5.9.2
-        version: 5.9.3
-
   lib/api-client-react:
     dependencies:
       '@tanstack/react-query':

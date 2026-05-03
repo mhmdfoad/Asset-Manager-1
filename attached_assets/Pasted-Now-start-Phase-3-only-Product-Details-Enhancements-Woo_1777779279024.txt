@@ -1,0 +1,237 @@
+Now start Phase 3 only: Product Details Enhancements + WooCommerce Product Variations.
+
+The Next.js storefront is already connected to WooCommerce products and categories.
+Do not rebuild the whole project.
+Do not change the overall design direction.
+Do not implement cart logic yet.
+Do not implement checkout/payment yet.
+Do not implement authentication yet.
+Do not implement the custom WordPress plugin yet.
+
+Goal:
+Improve the product details page and add full support for WooCommerce variable products and product variations.
+
+Current stack:
+- Next.js App Router
+- TypeScript
+- Tailwind CSS
+- next-intl
+- WooCommerce REST API
+- Arabic default RTL
+- English secondary LTR
+
+Important Security Rule:
+Never expose WooCommerce Consumer Key or Consumer Secret in the browser.
+All WooCommerce REST API calls must remain server-side only.
+
+Required Work:
+
+1. Extend WooCommerce API Client
+
+Update the existing WooCommerce API client to support fetching variations:
+
+Endpoint:
+GET /wp-json/wc/v3/products/{productId}/variations
+
+Create a function:
+getProductVariations(productId)
+
+It should:
+- Fetch all product variations.
+- Support pagination if needed.
+- Return typed variation data.
+- Handle API errors cleanly.
+- Never run in the browser.
+
+2. Add TypeScript Types
+
+Extend types/woocommerce.ts with:
+
+- WooCommerceProductVariation
+- VariationAttribute
+- VariationImage
+- VariationDimensions
+- VariationPrice fields
+- Stock status
+- Purchasable status
+- Backorders fields if available
+
+The types should be practical and not over-complicated.
+
+3. Product Details Page Enhancement
+
+Update /product/[slug] to support:
+
+For simple products:
+- Show normal product price.
+- Show sale price if available.
+- Show stock status.
+- Show SKU.
+- Show product attributes.
+- Show placeholder Add to Cart button.
+
+For variable products:
+- Fetch product variations server-side.
+- Display variation selectors based on product attributes.
+- Allow the user to select attribute values.
+- Match the selected attribute combination to the correct variation.
+- Update displayed:
+  - Price
+  - Sale price
+  - Stock status
+  - SKU
+  - Product image if variation has an image
+  - Availability message
+- Disable unavailable/out-of-stock combinations where possible.
+- Show a clear message when no valid variation is selected.
+- Keep the Add to Cart button as a placeholder for now, but it should know the selected variation_id for the next phase.
+
+4. Variation Selection Logic
+
+Create a clean utility function, for example:
+
+lib/variations.ts
+
+Functions:
+- normalizeAttributeName(name)
+- getVariationAttributeValue(variation, attributeName)
+- findMatchingVariation(variations, selectedAttributes)
+- getAvailableOptions(productAttributes, variations, selectedAttributes)
+- isVariationInStock(variation)
+
+Requirements:
+- Handle Arabic/English attribute names.
+- Handle WooCommerce attribute slugs like pa_color, color, size.
+- Handle empty selected attributes.
+- Handle missing variation attributes safely.
+- Work with both global attributes and custom product attributes.
+
+5. Product UI Components
+
+Create or improve these components:
+
+components/product/ProductGallery.tsx
+- Main image
+- Thumbnail list
+- Support selected variation image
+- Fallback image if missing
+
+components/product/ProductPrice.tsx
+- Regular price
+- Sale price
+- Price range for variable products before selection
+- Selected variation price after selection
+
+components/product/VariationSelector.tsx
+- Attribute selector UI
+- Buttons or swatches for options
+- Active state
+- Disabled state
+- RTL/LTR safe
+- Accessible labels
+
+components/product/StockBadge.tsx
+- In stock
+- Out of stock
+- On backorder
+- Low stock if data exists
+
+components/product/ProductMeta.tsx
+- SKU
+- Categories
+- Tags if available
+
+components/product/ProductDescription.tsx
+- Short description
+- Full description
+- Product attributes table
+
+6. Product Page UX
+
+Improve product page experience:
+- Better gallery layout.
+- Better spacing.
+- Sticky product summary on desktop if suitable.
+- Clear price display.
+- Clear stock status.
+- Clean variation selector.
+- Skeleton or fallback states if needed.
+- Good mobile layout.
+- Fully RTL compatible.
+
+7. HTML Content Safety
+
+WooCommerce descriptions may contain HTML.
+
+Create or use a safe rendering approach:
+- Sanitize WooCommerce HTML before rendering if needed.
+- Do not dangerously render untrusted HTML without sanitization.
+- If using dangerouslySetInnerHTML, isolate it in a safe component.
+- Keep styling consistent for product descriptions.
+
+8. Related Products
+
+If easy, add a simple related products section:
+- Use product.related_ids if available.
+- Fetch related products server-side.
+- Display with existing ProductCard.
+- If not available, show products from same category.
+- If no related products, hide the section.
+
+9. Metadata
+
+Improve product metadata:
+- Product title
+- Product short description
+- Product image as Open Graph image if available
+- Basic Product structured data placeholder if appropriate
+
+Do not overdo SEO in this phase. Keep it clean.
+
+10. i18n and RTL
+
+- Keep Arabic RTL working perfectly.
+- Keep English LTR working.
+- UI labels should use translation files.
+- Attribute names and values come from WooCommerce as-is.
+- Prepare code so language parameter can be added later if WPML/Polylang is used.
+
+11. Code Quality
+
+- Keep server-side data fetching separate from client-side selection UI.
+- Use a client component only where interactivity is required.
+- Keep variation matching logic in utility functions, not inside UI components.
+- Do not duplicate logic.
+- Use TypeScript cleanly.
+- Avoid large messy components.
+- Keep existing premium design.
+- Do not break product, shop, or category pages.
+
+Expected Output:
+1. Add variation fetching to WooCommerce API layer.
+2. Add product variation TypeScript types.
+3. Add variation matching utilities.
+4. Improve product details page.
+5. Add variation selector UI.
+6. Update price, image, SKU, and stock based on selected variation.
+7. Keep Add to Cart as placeholder but prepare selected product_id and variation_id for the next phase.
+8. Add related products section if reasonable.
+9. Explain how variation matching works.
+10. Explain how to test variable products.
+11. Explain what the next phase should be.
+
+Testing Requirements:
+Test with:
+- Simple product.
+- Variable product with two attributes, such as color and size.
+- Variable product with one attribute.
+- Variable product with out-of-stock variation.
+- Variable product with missing variation image.
+- Product with no image.
+- Product with sale price.
+- Product with no sale price.
+
+Final reminder:
+This is Phase 4 only.
+Implement product details enhancements and WooCommerce variations.
+Do not implement cart, checkout, payment, authentication, or the custom WordPress plugin yet.

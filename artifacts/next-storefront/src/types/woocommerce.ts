@@ -1,6 +1,7 @@
 export type StockStatus = 'instock' | 'outofstock' | 'onbackorder';
 export type ProductType = 'simple' | 'variable' | 'grouped' | 'external';
 export type ProductStatus = 'publish' | 'draft' | 'pending' | 'private';
+export type BackordersStatus = 'no' | 'notify' | 'yes';
 
 export interface ProductImage {
   id: number;
@@ -69,6 +70,34 @@ export interface WooProduct {
   rating_count: number;
   related_ids: number[];
   lang?: string;
+}
+
+export interface VariationAttribute {
+  id: number;
+  name: string;
+  slug: string;
+  option: string;
+}
+
+export interface WooProductVariation {
+  id: number;
+  sku: string;
+  price: string;
+  regular_price: string;
+  sale_price: string;
+  on_sale: boolean;
+  purchasable: boolean;
+  stock_status: StockStatus;
+  stock_quantity: number | null;
+  manage_stock: boolean;
+  backorders: BackordersStatus;
+  backorders_allowed: boolean;
+  backordered: boolean;
+  weight: string;
+  dimensions: ProductDimensions;
+  image: ProductImage | null;
+  attributes: VariationAttribute[];
+  description: string;
 }
 
 export interface WooCategory {

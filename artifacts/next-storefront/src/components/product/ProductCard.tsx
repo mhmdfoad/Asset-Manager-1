@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
-import { formatPrice, decodeSlug } from '@/lib/products';
+import { formatPrice, decodeSlug } from '@/lib/format';
 import type { WooProduct } from '@/types/woocommerce';
 import { cn } from '@/lib/utils';
 
