@@ -123,7 +123,10 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
       paymentMethod: 'cod',
       couponCode: '',
       customerNote: '',
-      // Spread prefill data if available — guest checkout keeps empty defaults
+      // Spread prefill data if available — guest checkout keeps empty defaults.
+      // Shipping is only preset when the user has a complete saved shipping address
+      // (country + city + address_1 all non-empty). Otherwise it's left as undefined
+      // so the hidden shipping fields never trigger validation errors.
       ...(prefillData
         ? {
             billing: {
@@ -139,17 +142,23 @@ export default function CheckoutForm({ locale, prefillData }: CheckoutFormProps)
               postcode: prefillData.billing.postcode,
               company: '',
             },
-            shipping: {
-              first_name: prefillData.shipping.first_name,
-              last_name: prefillData.shipping.last_name,
-              country: prefillData.shipping.country,
-              state: prefillData.shipping.state,
-              city: prefillData.shipping.city,
-              address_1: prefillData.shipping.address_1,
-              address_2: prefillData.shipping.address_2,
-              postcode: prefillData.shipping.postcode,
-              company: '',
-            },
+            ...(prefillData.shipping.country &&
+            prefillData.shipping.city &&
+            prefillData.shipping.address_1
+              ? {
+                  shipping: {
+                    first_name: prefillData.shipping.first_name,
+                    last_name: prefillData.shipping.last_name,
+                    country: prefillData.shipping.country,
+                    state: prefillData.shipping.state,
+                    city: prefillData.shipping.city,
+                    address_1: prefillData.shipping.address_1,
+                    address_2: prefillData.shipping.address_2,
+                    postcode: prefillData.shipping.postcode,
+                    company: '',
+                  },
+                }
+              : {}),
           }
         : {}),
     },

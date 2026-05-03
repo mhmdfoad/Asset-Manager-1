@@ -93,14 +93,30 @@ export function createShippingSchema(isAr: boolean) {
 /* ------------------------------------------------------------------ */
 
 export function createCheckoutSchema(isAr: boolean) {
-  return z.object({
-    billing: createBillingSchema(isAr),
-    sameAsBilling: z.boolean().default(true),
-    shipping: createShippingSchema(isAr).optional(),
-    couponCode: z.string().max(100).optional().or(z.literal('')),
-    customerNote: z.string().max(1000).optional().or(z.literal('')),
-    paymentMethod: z.string().min(1).default('cod'),
-  });
+  return z
+    .object({
+      billing: createBillingSchema(isAr),
+      sameAsBilling: z.boolean().default(true),
+      // All shipping sub-fields are optional at the object level.
+      // Required fields are enforced by superRefine ONLY when sameAsBilling=false,
+      // so hidden shipping values never block submission.
+      shipping: createShippingSchema(isAr).partial().optional(),
+      couponCode: z.string().max(100).optional().or(z.literal('')),
+      customerNote: z.string().max(1000).optional().or(z.literal('')),
+      paymentMethod: z.string().min(1).default('cod'),
+    })
+    .superRefine((data, ctx) => {
+      // Validate shipping required fields only when the user explicitly
+      // wants a different shipping address.
+      if (!data.sameAsBilling) {
+        const result = createShippingSchema(isAr).safeParse(data.shipping);
+        if (!result.success) {
+          for (const issue of result.error.issues) {
+            ctx.addIssue({ ...issue, path: ['shipping', ...issue.path] });
+          }
+        }
+      }
+    });
 }
 
 /* ------------------------------------------------------------------ */
