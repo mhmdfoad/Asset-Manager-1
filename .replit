@@ -33,3 +33,8 @@ externalPort = 80
 [[ports]]
 localPort = 20792
 externalPort = 3002
+
+[userenv]
+
+[userenv.shared]
+NEXT_PUBLIC_CURRENCY_SYMBOL = "SAR"

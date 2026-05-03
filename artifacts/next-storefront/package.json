@@ -13,6 +13,7 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "next-intl": "^3.26.3",
+    "server-only": "^0.0.1",
     "clsx": "catalog:",
     "tailwind-merge": "catalog:",
     "lucide-react": "catalog:"

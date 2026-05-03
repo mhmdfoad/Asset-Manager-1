@@ -27,7 +27,10 @@
     "featuredProducts": "منتجات مميزة",
     "categories": "تسوق حسب الفئة",
     "newArrivals": "وصل حديثاً",
-    "exploreNew": "استكشف الجديد"
+    "exploreNew": "استكشف الجديد",
+    "viewAll": "عرض الكل",
+    "latestProducts": "أحدث المنتجات",
+    "saleProducts": "عروض وتخفيضات"
   },
   "Shop": {
     "title": "المتجر",
@@ -35,9 +38,39 @@
     "sort": "ترتيب",
     "products": "منتجات",
     "noProducts": "لا توجد منتجات",
-    "sortByPrice": "الأقل سعراً",
-    "sortByNewest": "الأحدث",
-    "sortByPopular": "الأكثر مبيعاً"
+    "sortLatest": "الأحدث",
+    "sortPriceLow": "السعر: من الأقل إلى الأعلى",
+    "sortPriceHigh": "السعر: من الأعلى إلى الأقل",
+    "sortPopular": "الأكثر مبيعاً",
+    "searchPlaceholder": "ابحث عن منتجات...",
+    "clearSearch": "مسح البحث",
+    "showing": "عرض",
+    "of": "من",
+    "results": "نتيجة",
+    "noResults": "لا توجد منتجات",
+    "tryDifferent": "جرب بحثاً مختلفاً أو تصفح الفئات"
+  },
+  "Product": {
+    "addToCart": "أضف إلى السلة",
+    "outOfStock": "نفد من المخزون",
+    "inStock": "متوفر في المخزون",
+    "onBackorder": "متاح عند الطلب",
+    "sku": "رمز المنتج",
+    "categories": "الفئات",
+    "description": "وصف المنتج",
+    "attributes": "تفاصيل المنتج",
+    "relatedProducts": "منتجات ذات صلة",
+    "sale": "تخفيض",
+    "featured": "مميز",
+    "variationsNote": "سيتم تطبيق خيارات المنتج في المرحلة القادمة.",
+    "notFound": "المنتج غير موجود",
+    "priceUnavailable": "السعر غير متاح",
+    "stockLeft": "متبقي"
+  },
+  "Category": {
+    "notFound": "الفئة غير موجودة",
+    "browseAll": "تصفح جميع الفئات",
+    "products": "منتجات"
   },
   "Cart": {
     "title": "سلة التسوق",

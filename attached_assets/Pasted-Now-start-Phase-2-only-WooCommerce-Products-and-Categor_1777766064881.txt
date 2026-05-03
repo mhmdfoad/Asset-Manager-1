@@ -1,0 +1,199 @@
+Now start Phase 2 only: WooCommerce Products and Categories API Integration.
+
+The Next.js foundation and premium UI are already ready.
+Do not change the overall design direction.
+Do not rebuild the UI from scratch.
+Do not implement cart logic yet.
+Do not implement checkout/payment yet.
+Do not implement authentication yet.
+Do not implement the custom WordPress plugin yet.
+
+Goal:
+Connect the existing Next.js storefront to WooCommerce and replace static placeholder products and categories with real data from the WooCommerce REST API.
+
+Backend:
+WordPress + WooCommerce is the source of truth.
+
+Frontend:
+Next.js App Router + TypeScript + Tailwind CSS + next-intl.
+
+Important Security Rule:
+Never expose WooCommerce Consumer Key or Consumer Secret in the browser.
+All WooCommerce REST API calls must happen server-side only.
+
+Environment Variables:
+Create and use these variables:
+
+WOOCOMMERCE_STORE_URL=
+WOOCOMMERCE_CONSUMER_KEY=
+WOOCOMMERCE_CONSUMER_SECRET=
+
+Required Work:
+
+1. WooCommerce API Client
+Create a server-only WooCommerce API client in:
+
+lib/woocommerce.ts
+
+It should:
+- Use native fetch or a clean HTTP helper.
+- Read credentials from environment variables.
+- Build authenticated WooCommerce REST API requests.
+- Support GET requests first.
+- Handle errors cleanly.
+- Return typed responses.
+- Prevent usage in client components.
+- Support query parameters.
+- Be easy to extend later for orders, customers, and coupons.
+
+Required endpoints for this phase:
+- GET /wp-json/wc/v3/products
+- GET /wp-json/wc/v3/products/categories
+- GET /wp-json/wc/v3/products/{id}
+- GET /wp-json/wc/v3/products?slug={slug}
+
+2. TypeScript Types
+Create product and category types in:
+
+types/woocommerce.ts
+
+Include types for:
+- Product
+- ProductImage
+- ProductCategory
+- ProductAttribute
+- ProductDefaultAttribute
+- ProductDimensions
+- ProductPrice fields
+- Stock status
+- Product type: simple, variable, grouped, external
+
+Do not over-engineer, but make the types useful and clean.
+
+3. Product Data Functions
+Create clean data fetching functions in:
+
+lib/products.ts
+
+Functions:
+- getProducts(params)
+- getFeaturedProducts()
+- getLatestProducts()
+- getSaleProducts()
+- getProductBySlug(slug)
+- getProductsByCategory(categorySlug)
+- getCategories()
+- getCategoryBySlug(slug)
+
+All functions should be server-side safe.
+
+4. Replace Homepage Placeholder Data
+Update homepage sections to use real WooCommerce data:
+- Featured products
+- Latest products
+- Sale products if available
+- Featured categories or main categories
+
+If WooCommerce has no data or API fails:
+- Show graceful fallback empty states.
+- Do not crash the page.
+- Keep the design polished.
+
+5. Shop Page
+Update /shop to display real WooCommerce products.
+
+Requirements:
+- Product grid
+- Pagination support using page and per_page query params
+- Sorting support:
+  - latest
+  - price low to high
+  - price high to low
+  - popularity if available
+- Basic search support using search query param
+- Loading/empty/error states where appropriate
+
+6. Category Page
+Update /category/[slug] to:
+- Fetch category by slug
+- Display category name, description, and image if available
+- Fetch products belonging to that category
+- Use the same product grid design
+- Handle category not found gracefully
+
+7. Product Details Page
+Update /product/[slug] to display real product data:
+- Product title
+- Product images gallery
+- Price
+- Sale price
+- Stock status
+- Short description
+- Full description
+- Categories
+- SKU
+- Product attributes
+- Placeholder add-to-cart button only for now
+- Related products placeholder or real basic related products if easy
+
+Important:
+Do not implement variations selection yet unless simple to prepare visually.
+For variable products, show a placeholder message:
+“Product variations will be implemented in the next phase.”
+
+8. Images
+Use Next.js Image component.
+Configure next.config.ts or next.config.js to allow images from the WooCommerce/WordPress domain.
+
+9. SEO Metadata
+Generate basic metadata for:
+- Product pages
+- Category pages
+- Shop page
+
+Use product/category name and description where available.
+
+10. Caching and Revalidation
+Use Next.js fetch caching properly:
+- Product listing pages: revalidate 60 seconds
+- Product details: revalidate 60 seconds
+- Categories: revalidate 300 seconds
+
+Keep cart/checkout untouched.
+
+11. i18n Consideration
+The current project supports Arabic and English.
+For now:
+- Keep UI translations working.
+- Fetch WooCommerce content normally.
+- Prepare the code so that later we can pass lang=ar or lang=en if WPML/Polylang is installed.
+- Add a simple helper to include language query param in the future, but do not require WPML now.
+
+12. Code Quality
+- Keep components clean.
+- Do not put fetch logic inside deeply nested UI components.
+- Separate data fetching from presentation.
+- Keep ProductCard reusable.
+- Add fallback handling for missing image, missing price, missing description.
+- Avoid any client-side exposure of API credentials.
+- Use semantic HTML.
+- Keep the current premium design.
+
+Expected Output:
+1. Create WooCommerce API client.
+2. Create TypeScript types.
+3. Create product/category data functions.
+4. Connect homepage to real products/categories.
+5. Connect shop page to real products.
+6. Connect category page to real category data.
+7. Connect product details page to real product data.
+8. Configure images domain.
+9. Add basic metadata.
+10. Explain how to set environment variables.
+11. Explain how to test the integration.
+12. Explain what the next phase should be.
+
+Final reminder:
+This is Phase 3 only.
+Connect products and categories to WooCommerce.
+Do not build cart, checkout, payment, authentication, or the custom WordPress plugin yet.
