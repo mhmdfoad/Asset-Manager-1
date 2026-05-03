@@ -1,0 +1,316 @@
+Now start the next phase only: Coupons + Shipping + Server-side Order Totals.
+
+The storefront already has:
+- WooCommerce products and categories integration
+- Product details and variations
+- Cart system
+- Checkout order creation
+- Payment redirect to WooCommerce
+- Payment return verification
+- Custom customer authentication
+- Checkout prefill for logged-in customers
+
+Do not rebuild the whole project.
+Do not change the overall design direction.
+Do not implement SEO yet.
+Do not implement the Storefront Controller plugin yet.
+Do not change authentication unless necessary.
+
+Goal:
+Improve the checkout and cart flow by adding proper WooCommerce coupon handling, shipping method selection, and server-side totals calculation.
+
+Important:
+WooCommerce must be the source of truth for:
+- Product prices
+- Sale prices
+- Coupons
+- Discounts
+- Shipping rates
+- Taxes
+- Final order total
+
+Never trust cart totals calculated in the browser.
+
+Required Work:
+
+1. Server-side Cart/Totals Calculation
+
+Create a secure Next.js API route:
+
+POST /api/cart/calculate
+
+Input from browser:
+- line_items:
+  - product_id
+  - variation_id optional
+  - quantity
+- billing/shipping address if available
+- coupon_code optional
+
+Do not accept:
+- product prices
+- subtotal
+- discount total
+- shipping total
+- tax total
+- final total
+
+The API route should:
+- Validate input using Zod.
+- Fetch product/variation data from WooCommerce server-side.
+- Verify products exist.
+- Verify variations belong to products.
+- Verify stock status if possible.
+- Validate quantities.
+- Calculate subtotal server-side.
+- Validate coupon code with WooCommerce.
+- Calculate discount.
+- Fetch or calculate available shipping methods if possible.
+- Return safe calculated totals.
+
+If exact WooCommerce cart calculation is hard via REST API:
+- Implement a safe approximation using WooCommerce product prices server-side.
+- Validate coupon using WooCommerce coupon endpoint.
+- Let final exact total be calculated by WooCommerce during order creation.
+- Clearly keep order creation as final source of truth.
+
+2. Coupon Support
+
+Add coupon support in Cart and Checkout.
+
+UI requirements:
+- Coupon input field.
+- Apply coupon button.
+- Remove coupon button.
+- Loading state.
+- Error message for invalid coupon.
+- Success message for valid coupon.
+- Display discount amount in cart summary and checkout summary.
+
+Server requirements:
+- Coupon validation must happen server-side.
+- Use WooCommerce coupon API:
+  GET /wp-json/wc/v3/coupons?code={couponCode}
+- Check:
+  - coupon exists
+  - coupon is not expired
+  - usage limit if available
+  - minimum amount if available
+  - maximum amount if available
+  - product/category restrictions if practical
+  - excluded products/categories if practical
+- Return safe coupon data only:
+  - code
+  - discount_type
+  - amount
+  - description if safe
+  - calculated_discount
+
+Important:
+Do not trust coupon discount calculated in the browser.
+
+3. Shipping Methods
+
+Add shipping method support in Checkout.
+
+UI requirements:
+- Shipping address fields should affect available shipping options.
+- Add shipping methods section.
+- Show available methods:
+  - method title
+  - description if available
+  - cost
+- Allow customer to select one shipping method.
+- Show selected shipping cost in order summary.
+- If no shipping methods are available, show a clear message.
+- If product is virtual/downloadable only, hide shipping methods if appropriate.
+
+Server requirements:
+- Add API route:
+  POST /api/shipping/methods
+
+Input:
+- cart line items
+- shipping address
+
+The API route should:
+- Validate request.
+- Determine available shipping methods based on WooCommerce settings if possible.
+- Return safe shipping methods.
+
+Important:
+WooCommerce REST API does not always provide direct live cart shipping calculation easily.
+If live shipping rate calculation is not available through current setup, implement a practical first version:
+- Read WooCommerce shipping zones/methods server-side.
+- Match country/state/postcode if possible.
+- Return enabled flat_rate/free_shipping/local_pickup methods.
+- Let WooCommerce order creation remain the final authority.
+- Make the code extendable for advanced shipping later.
+
+4. Order Creation Update
+
+Update existing checkout create-order flow.
+
+When creating WooCommerce order:
+- Send line_items with product_id, variation_id, quantity.
+- Send coupon_lines if coupon applied.
+- Send shipping_lines with selected shipping method if selected.
+- Send billing and shipping data.
+- Send customer_id if logged in.
+- Do not send client-side prices.
+- Do not send client-side totals.
+
+WooCommerce should calculate the final order totals.
+
+If WooCommerce returns a different total than the preview:
+- Trust WooCommerce order total.
+- Show order total from WooCommerce before redirect if possible.
+
+5. Cart Summary / Checkout Summary
+
+Update summary components to show:
+- Subtotal
+- Coupon discount
+- Shipping
+- Tax if available
+- Total
+- Applied coupon
+- Selected shipping method
+
+Important:
+Label preview totals clearly if they are estimates.
+
+Example:
+- Estimated total
+- Final total will be confirmed before payment
+
+6. State Management
+
+Update cart store if needed:
+- Store applied coupon code.
+- Store selected shipping method.
+- Store calculated totals preview.
+- Clear coupon/shipping when cart is cleared.
+- Recalculate totals when:
+  - cart item changes
+  - coupon changes
+  - shipping address changes
+  - shipping method changes
+
+Do not store trusted totals permanently.
+Use totals only for display.
+
+7. Virtual Products
+
+Handle products that do not need shipping:
+- If all cart products are virtual/downloadable, hide shipping method selection.
+- If mixed cart, require shipping.
+- Add helper:
+  cartNeedsShipping()
+
+8. Error Handling
+
+Handle:
+- Invalid coupon
+- Expired coupon
+- Coupon minimum not met
+- Coupon product restriction
+- No shipping method available
+- Product out of stock
+- Variation invalid
+- Quantity invalid
+- WooCommerce API error
+- Totals calculation failed
+- Shipping calculation failed
+
+Show clean Arabic/English user-friendly messages.
+
+9. i18n
+
+Add Arabic and English translations for:
+- Coupon code
+- Apply coupon
+- Remove coupon
+- Coupon applied
+- Invalid coupon
+- Discount
+- Shipping
+- Shipping method
+- Select shipping method
+- Free shipping
+- Local pickup
+- Tax
+- Subtotal
+- Total
+- Estimated total
+- No shipping methods available
+- Final total will be confirmed before payment
+
+10. Security
+
+- All coupon validation server-side.
+- All shipping method fetching/calculation server-side.
+- Do not expose WooCommerce API keys.
+- Do not trust browser totals.
+- Validate product IDs and variation IDs.
+- Validate quantities.
+- Sanitize coupon codes.
+- Validate selected shipping method against server-available methods.
+- Do not allow arbitrary shipping cost injection from client.
+- Do not allow arbitrary coupon discount injection from client.
+
+11. Code Quality
+
+- Keep totals logic separate from UI.
+- Create reusable helpers:
+  - lib/cart-totals.ts
+  - lib/coupons.ts
+  - lib/shipping.ts
+- Keep checkout form clean.
+- Keep cart summary reusable between cart and checkout.
+- Maintain current premium UI.
+- Maintain Arabic RTL and English LTR.
+- Do not break existing checkout/payment flow.
+
+Expected Output:
+1. Add server-side cart totals calculation endpoint.
+2. Add coupon validation and application.
+3. Add shipping methods endpoint.
+4. Add shipping method UI in checkout.
+5. Update cart and checkout summaries.
+6. Update order creation to send coupon_lines and shipping_lines.
+7. Ensure WooCommerce remains final source of truth.
+8. Add Arabic/English translations.
+9. Explain limitations of WooCommerce REST shipping calculation if any.
+10. Explain how to test coupons, shipping, and totals.
+11. Explain what the next phase should be.
+
+Testing Requirements:
+Test:
+- Cart with no coupon.
+- Valid coupon.
+- Invalid coupon.
+- Expired coupon.
+- Coupon with minimum amount.
+- Coupon with fixed cart discount.
+- Coupon with percentage discount.
+- Free shipping coupon if applicable.
+- Flat rate shipping.
+- Free shipping.
+- Local pickup.
+- Virtual product cart.
+- Mixed physical/virtual cart.
+- Variable product.
+- Out-of-stock product.
+- Logged-in checkout.
+- Guest checkout.
+- Arabic RTL.
+- English LTR.
+- Mobile checkout layout.
+- Final order total inside WooCommerce.
+
+Final reminder:
+This phase is only for coupons, shipping, and server-side totals.
+Do not implement SEO yet.
+Do not implement the Storefront Controller plugin yet.
+Do not rebuild the store.
